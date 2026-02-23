@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>PRS Stage & Match Builder</title>
+<style>
+body { font-family: Arial; padding: 20px; background: #f4f4f4; }
+.section { background: white; padding: 15px; margin-bottom: 15px; border-radius: 6px; }
+button { padding: 10px 15px; font-weight: bold; }
+table { border-collapse: collapse; margin-top: 10px; }
+td, th { border: 1px solid #ccc; padding: 6px; text-align: center; }
+</style>
+</head>
+<body>
+
+<h1>PRS Stage & Match Builder</h1>
+
+<div class="section">
+<h3>Mode</h3>
+<label><input type="radio" name="mode" value="single" checked> Single Stage</label>
+<label><input type="radio" name="mode" value="match"> Match Mode</label>
+</div>
+
+<div class="section">
+<h3>Global Range (Yards)</h3>
+Min: <input type="number" id="minDist" value="400">
+Max: <input type="number" id="maxDist" value="800">
+</div>
+
+<div class="section">
+<h3>Stage Settings</h3>
+Targets: <input type="number" id="targetCount" value="4"><br><br>
+
+Focus:
+<select id="focus">
+<option value="balanced">Balanced</option>
+<option value="wind">Wind</option>
+<option value="elevation">Elevation</option>
+<option value="small">Small Target</option>
+<option value="combined">Combined</option>
+</select><br><br>
+
+Round Mode:
+<select id="roundMode">
+<option value="full">Full</option>
+<option value="mid">Mid Compression</option>
+<option value="low">Low Compression</option>
+</select><br><br>
+
+Units:
+<select id="units">
+<option value="MOA">MOA</option>
+<option value="MIL">MIL</option>
+</select>
+</div>
+
+<div class="section">
+<h3>Equipment Available</h3>
+<label><input type="checkbox" value="Barricade" checked> Barricade</label>
+<label><input type="checkbox" value="Tripod"> Tripod</label>
+<label><input type="checkbox" value="Tank Trap"> Tank Trap</label>
+<label><input type="checkbox" value="Rooftop"> Rooftop</label>
+<label><input type="checkbox" value="Prone"> Prone</label>
+<label><input type="checkbox" value="Modified Prone"> Modified Prone</label>
+</div>
+
+<div class="section">
+<h3>Match Settings (Match Mode Only)</h3>
+Stages: <input type="number" id="stageCount" value="8"><br><br>
+Difficulty:
+<select id="difficulty">
+<option value="club">Club</option>
+<option value="regional">Regional</option>
+<option value="national">National</option>
+</select>
+</div>
+
+<button onclick="generate()">Generate</button>
+
+<div id="output" class="section"></div>
+
+<script>
+
+const MOA_OPTIONS = [0.5,1,1.5,2,3,4];
+const MIL_OPTIONS = [0.2,0.3,0.5,0.7,1.0,1.2];
+
+function rand(min,max){ return Math.random()*(max-min)+min; }
+function randInt(min,max){ return Math.floor(rand(min,max)); }
+function shuffle(arr){ return arr.sort(()=>Math.random()-0.5); }
+
+function generateDistances(min,max,count){
+  let arr=[];
+  for(let i=0;i<count;i++){
+    arr.push(Math.round(rand(min,max)));
+  }
+  arr.sort((a,b)=>a-b);
+  return arr;
+}
+
+function pickPlate(focus, units){
+  let options = units==="MOA" ? MOA_OPTIONS : MIL_OPTIONS;
+  let pool=[...options];
+
+  if(focus==="small") pool=options.slice(0,2);
+  if(focus==="elevation") pool=options.slice(1,4);
+  if(focus==="wind") pool=options.slice(1,3);
+
+  return pool[randInt(0,pool.length)];
+}
+
+function getRoundProfile(mode){
+  if(mode==="full"){
+    return { rounds: randInt(10,12), time:105 };
+  }
+  if(mode==="mid"){
+    return { rounds: randInt(6,8), time:randInt(75,91) };
+  }
+  return { rounds: randInt(4,6), time:randInt(45,61) };
+}
+
+function allocateRounds(targets,totalRounds){
+  let remaining = totalRounds;
+  let allocation = targets.map(t=>({ ...t, rounds:0 }));
+
+  for(let i=0;i<allocation.length && remaining>0;i++){
+    allocation[i].rounds++;
+    remaining--;
+  }
+
+  while(remaining>0){
+    let idx = randInt(0,allocation.length);
+    allocation[idx].rounds++;
+    remaining--;
+  }
+
+  return allocation;
+}
+
+function buildEngagementSequence(targets){
+  let pool=[];
+  targets.forEach(t=>{
+    for(let i=0;i<t.rounds;i++){
+      pool.push(t.id);
+    }
+  });
+
+  shuffle(pool);
+
+  for(let i=1;i<pool.length;i++){
+    if(pool[i]===pool[i-1]){
+      let swapIndex = pool.findIndex((val,j)=>j>i && val!==pool[i]);
+      if(swapIndex>i){
+        [pool[i],pool[swapIndex]]=[pool[swapIndex],pool[i]];
+      }
+    }
+  }
+
+  return pool;
+}
+
+function splitAcrossPositions(sequence, positions){
+  let splits=[];
+  let perPos = Math.floor(sequence.length / positions.length);
+  let remainder = sequence.length % positions.length;
+  let index=0;
+
+  for(let i=0;i<positions.length;i++){
+    let count = perPos + (i===positions.length-1 ? remainder : 0);
+    splits.push(sequence.slice(index,index+count));
+    index+=count;
+  }
+
+  return splits;
+}
+
+function buildStage(globalMin,globalMax){
+
+  let targetCount = parseInt(document.getElementById("targetCount").value);
+  let focus = document.getElementById("focus").value;
+  let roundMode = document.getElementById("roundMode").value;
+  let units = document.getElementById("units").value;
+
+  let equipment = Array.from(document.querySelectorAll("input[type=checkbox]:checked")).map(e=>e.value);
+  if(equipment.length===0) equipment=["Barricade","Prone"];
+
+  let distances = generateDistances(globalMin,globalMax,targetCount);
+
+  let targets=[];
+  for(let i=0;i<targetCount;i++){
+    targets.push({
+      id:"T"+(i+1),
+      distance:distances[i],
+      size:pickPlate(focus,units)
+    });
+  }
+
+  targets=shuffle(targets);
+
+  let roundProfile = getRoundProfile(roundMode);
+  let allocated = allocateRounds(targets, roundProfile.rounds);
+  let engagementOrder = buildEngagementSequence(allocated);
+
+  let positionsCount = roundMode==="full"?3:(roundMode==="mid"?2:1);
+  let positions = shuffle(equipment).slice(0,positionsCount);
+
+  let splitSequence = splitAcrossPositions(engagementOrder, positions);
+
+  return {
+    targets:allocated,
+    engagement:engagementOrder,
+    split:splitSequence,
+    positions:positions,
+    totalRounds:roundProfile.rounds,
+    time:roundProfile.time,
+    units:units
+  };
+}
+
+function renderStage(stage,index=null){
+
+  let html="";
+
+  if(index!==null) html+=`<h2>Stage ${index+1}</h2>`;
+
+  html+=`Time: ${stage.time} sec<br>`;
+  html+=`Total Rounds: ${stage.totalRounds}<br>`;
+  html+=`Positions Used: ${stage.positions.join(", ")}<br><br>`;
+
+  html+="<table><tr><th>Target</th><th>Distance</th><th>Size</th><th>Total Rounds</th></tr>";
+  stage.targets.forEach(t=>{
+    html+=`<tr><td>${t.id}</td><td>${t.distance}</td><td>${t.size} ${stage.units}</td><td>${t.rounds}</td></tr>`;
+  });
+  html+="</table><br>";
+
+  html+="<b>Course of Fire:</b><br>";
+  html+="Engagement sequence is continuous across positions.<br><br>";
+
+  stage.positions.forEach((pos,i)=>{
+    html+=`<b>${pos}:</b> `;
+    html+=stage.split[i].join(" → ");
+    html+="<br>";
+  });
+
+  html+="<br>All rounds must be expended within time limit.";
+
+  return html;
+}
+
+function generate(){
+  let mode = document.querySelector('input[name="mode"]:checked').value;
+  let globalMin = parseInt(document.getElementById("minDist").value);
+  let globalMax = parseInt(document.getElementById("maxDist").value);
+
+  let output="";
+
+  if(mode==="single"){
+    let stage=buildStage(globalMin,globalMax);
+    output=renderStage(stage);
+  } else {
+    let stageCount=parseInt(document.getElementById("stageCount").value);
+    for(let i=0;i<stageCount;i++){
+      let stage=buildStage(globalMin,globalMax);
+      output+=renderStage(stage,i);
+    }
+  }
+
+  document.getElementById("output").innerHTML=output;
+}
+
+</script>
+
+</body>
+</html>
