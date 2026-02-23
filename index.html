@@ -166,11 +166,14 @@
   .header-inner {
     display: flex;
     align-items: center;
-    gap: 20px;
-    padding: 16px 24px;
+    gap: 16px;
+    padding: 12px 18px;
+    flex-wrap: nowrap;
+    min-width: 0;
   }
 
   .reticle { width: 46px; height: 46px; flex-shrink: 0; }
+  .header-text { min-width: 0; flex-shrink: 1; overflow: hidden; }
   .reticle svg { width: 100%; height: 100%; animation: reticle-spin 20s linear infinite; }
   @keyframes reticle-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
@@ -195,7 +198,8 @@
     margin-left: auto;
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 10px;
+    flex-shrink: 0;
   }
 
   .help-btn {
@@ -860,7 +864,7 @@
 
   /* ── RESPONSIVE ── */
   @media (max-width: 820px) {
-    /* On mobile the grid stacks; each section is natural-flow and scrolls with the page */
+    /* Grid stacks vertically; page scrolls as one document */
     .main-grid {
       grid-template-columns: 1fr;
       height: auto;
@@ -881,18 +885,349 @@
     }
     .stage-body { grid-template-columns: 1fr; }
     .cof-section { border-left: none; border-top: 1px solid var(--border); padding-left: 0; padding-top: 14px; }
-    .header-status { display: none; }
     .help-grid { grid-template-columns: 1fr; }
     .gen-btn { margin-bottom: 16px; }
-    /* Prevent empty state from locking scroll on mobile */
     .empty-state { min-height: 200px; }
-    /* Collapse theme switcher label on small screens */
+
+    /* ── MOBILE HEADER ── */
+    /* Tighter outer padding */
+    .header-inner {
+      padding: 8px 10px;
+      gap: 8px;
+    }
+
+    /* Shrink/hide reticle on very narrow screens */
+    .reticle { width: 32px; height: 32px; }
+
+    /* Shrink title */
+    .header-text h1 { font-size: 1.2rem; letter-spacing: 0.06em; }
+    .header-text p  { font-size: 0.52rem; letter-spacing: 0.12em; margin-top: 2px; }
+
+    /* Right block: stack theme+help vertically, status below */
+    .header-right {
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 5px;
+    }
+
+    /* Row 1: theme buttons + help side by side */
+    .header-right-top {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Theme buttons — vertical stack, swatches only (no text label) */
+    .theme-switcher {
+      flex-direction: row;
+      align-items: center;
+      gap: 3px;
+    }
     .theme-switcher-label { display: none; }
+    .theme-btns { flex-direction: row; gap: 3px; }
+    .theme-btn {
+      padding: 4px 6px;
+      font-size: 0; /* hide text label */
+      gap: 0;
+    }
+    .theme-swatch { width: 10px; height: 10px; }
+
+    /* Help button — compact */
+    .help-btn {
+      font-size: 0.6rem;
+      padding: 5px 8px;
+      letter-spacing: 0.1em;
+      white-space: nowrap;
+    }
+
+    /* Status block — visible but compact, right-aligned */
+    .header-status {
+      display: block;
+      font-size: 0.52rem;
+      letter-spacing: 0.08em;
+      line-height: 1.5;
+      text-align: right;
+    }
+
+    /* Instagram link in header — tighten */
+    .header-status a { font-size: 0.5rem; }
+  }
+
+  /* Portrait phones — even tighter */
+  @media (max-width: 430px) {
+    .header-text h1 { font-size: 1rem; }
+    .header-text p  { display: none; }
+    .reticle { width: 26px; height: 26px; }
   }
 
   /* Tablets — slightly narrower sidebar */
   @media (min-width: 821px) and (max-width: 1100px) {
     .main-grid { grid-template-columns: 300px 1fr; }
+  }
+
+  /* ══════════════════════════════════════════
+     DRY FIRE MODE
+  ══════════════════════════════════════════ */
+
+  /* Top-level app view switcher */
+  .app-view { display: none; }
+  .app-view.active { display: flex; flex-direction: column; width: 100%; }
+
+  /* Main grid is itself a view */
+  .main-grid { display: grid; }
+  .main-grid.active { display: grid; }
+
+  /* Header mode pill */
+  .view-tabs {
+    display: flex;
+    gap: 0;
+    margin-left: 12px;
+    flex-shrink: 0;
+  }
+
+  .view-tab {
+    padding: 6px 14px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .view-tab:first-child { border-right: none; }
+  .view-tab.active {
+    background: rgba(200,146,42,0.12);
+    border-color: var(--accent-dim);
+    color: var(--accent-bright);
+  }
+
+  .view-tab:hover:not(.active) { color: var(--text); background: rgba(255,255,255,0.03); }
+
+  /* ── DRY FIRE LAYOUT ── */
+  #dryFireView {
+    flex: 1;
+    display: none;
+    flex-direction: row;
+    height: calc(100vh - 84px);
+    overflow: hidden;
+  }
+
+  #dryFireView.active { display: flex; }
+
+  /* Dry fire sidebar */
+  .df-sidebar {
+    width: 260px;
+    min-width: 260px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 14px 12px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Dry fire canvas area */
+  .df-canvas-wrap {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    background: #1a2a1a;
+    cursor: crosshair;
+  }
+
+  /* The scene canvas — hillside perspective */
+  #dfScene {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      to bottom,
+      #3a5a7a 0%,        /* sky top */
+      #6a9abf 28%,       /* sky lower */
+      #7aaa5a 42%,       /* treeline/horizon */
+      #4a6a32 55%,       /* near hillside */
+      #3a5228 70%,       /* ground mid */
+      #2a3a1e 100%       /* ground near */
+    );
+    background-attachment: local;
+  }
+
+  /* Sky zone — targets cannot be placed here */
+  .df-sky-zone {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 38%;
+    pointer-events: none;
+    z-index: 2;
+    /* subtle indicator — only visible in edit mode */
+  }
+
+  .df-sky-zone.show-zone {
+    background: repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 8px,
+      rgba(100,160,220,0.06) 8px,
+      rgba(100,160,220,0.06) 16px
+    );
+    border-bottom: 1px dashed rgba(100,160,220,0.25);
+  }
+
+  /* Target element on canvas */
+  .df-target {
+    position: absolute;
+    cursor: grab;
+    user-select: none;
+    transform: translate(-50%, -50%);
+    transition: filter 0.15s;
+    touch-action: none;
+  }
+
+  .df-target:hover { filter: brightness(1.35); z-index: 50; }
+  .df-target.dragging { cursor: grabbing; z-index: 100; filter: brightness(1.5); }
+  .df-target.selected { outline: 1px dashed var(--accent-bright); outline-offset: 3px; }
+
+  .df-target-label {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    color: var(--accent-bright);
+    background: rgba(0,0,0,0.65);
+    padding: 1px 4px;
+    border-radius: 2px;
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  /* Steel plate target shapes */
+  .df-shape-circle {
+    border-radius: 50%;
+    background: #b0b8a8;
+    border: 2px solid #e8dfc8;
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.4), inset 0 1px 3px rgba(255,255,255,0.15);
+  }
+
+  .df-shape-square {
+    background: #b0b8a8;
+    border: 2px solid #e8dfc8;
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.4), inset 0 1px 3px rgba(255,255,255,0.15);
+  }
+
+  .df-shape-ipsc {
+    background: #c8b888;
+    border: 2px solid #e8dfc8;
+    border-radius: 35% 35% 0 0 / 25% 25% 0 0;
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.4);
+    clip-path: polygon(20% 0%, 80% 0%, 100% 35%, 100% 100%, 0% 100%, 0% 35%);
+  }
+
+  .df-shape-animal {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: inherit;
+    filter: drop-shadow(0 1px 3px rgba(0,0,0,0.7));
+    line-height: 1;
+  }
+
+  .df-shape-custom {
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+
+  /* Distance ruler line (horizontal) */
+  .df-ruler-band {
+    position: absolute;
+    left: 0; right: 0;
+    border-top: 1px dashed rgba(200,146,42,0.2);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .df-ruler-label {
+    position: absolute;
+    right: 6px;
+    transform: translateY(-50%);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    color: rgba(200,146,42,0.5);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* ── DRY FIRE CONTROLS ── */
+  .df-toolbar {
+    position: absolute;
+    bottom: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 6px;
+    z-index: 200;
+    background: rgba(13,15,12,0.85);
+    border: 1px solid var(--border);
+    padding: 7px 10px;
+    backdrop-filter: blur(4px);
+  }
+
+  .df-tool-btn {
+    padding: 5px 12px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+
+  .df-tool-btn:hover { border-color: var(--accent-dim); color: var(--accent-bright); }
+  .df-tool-btn.active { background: rgba(200,146,42,0.15); border-color: var(--accent); color: var(--accent-bright); }
+  .df-tool-btn.danger { color: var(--red-bright); border-color: var(--red); }
+  .df-tool-btn.danger:hover { background: rgba(200,90,58,0.15); }
+
+  /* Upload input hidden */
+  #dfCustomUpload { display: none; }
+
+  /* Dry fire empty state */
+  .df-empty-hint {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(200,210,180,0.25);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.18em;
+    pointer-events: none;
+    z-index: 1;
+    text-align: center;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  /* Mobile dry fire adjustments */
+  @media (max-width: 820px) {
+    #dryFireView { flex-direction: column; height: auto; }
+    .df-sidebar { width: 100%; min-width: 0; border-right: none; border-bottom: 1px solid var(--border); }
+    .df-canvas-wrap { height: 70vw; min-height: 300px; }
+    .df-toolbar { bottom: 6px; padding: 5px 7px; flex-wrap: wrap; justify-content: center; }
   }
 </style>
 </head>
@@ -911,20 +1246,34 @@
       <!-- OVERVIEW -->
       <div class="help-section">
         <div class="help-section-title"><span>◆</span> Overview</div>
-        <p class="help-p">The PRS &amp; NRL Hunter Stage Builder generates randomized stage and match plans for both Precision Rifle Series (PRS) and NRL Hunter competitions. Configure your range setup, equipment, discipline, and difficulty to produce realistic engagement sequences, positional splits, and time constraints — whether you're running steel plates or hunting-style animal silhouettes.</p>
+        <p class="help-p">The PRS &amp; NRL Hunter Stage Builder is a two-mode training and match-design tool for Precision Rifle Series and NRL Hunter competitors. It combines a <strong>Stage Builder</strong> for generating randomized match plans with a <strong>Dry Fire</strong> visualizer for turning those plans into a scaled, interactive target scene you can practice against.</p>
+        <p class="help-p">Use the <strong>◈ BUILDER</strong> and <strong>◎ DRY FIRE</strong> tabs in the header to switch between the two modes. They are designed to work together — build a stage, then import it directly into Dry Fire for a visual walk-through before you ever step to the line.</p>
       </div>
 
       <!-- MODES -->
       <div class="help-section">
-        <div class="help-section-title"><span>◆</span> Modes</div>
+        <div class="help-section-title"><span>◆</span> Application Modes</div>
         <div class="help-grid">
           <div class="help-card">
-            <div class="help-card-title">Single Stage</div>
-            <p>Generates one stage based on your current settings. Ideal for individual training drills, testing specific positional skills, or prototyping a stage before adding it to a match. All configuration settings apply directly to the single stage output.</p>
+            <div class="help-card-title">◈ Builder Mode</div>
+            <p>The primary stage and match design tool. Configure your range, discipline, equipment, and difficulty, then hit Generate to produce a fully randomized stage or multi-stage match card with target distances, plate sizes, round counts, time limits, and positional course-of-fire sequences. All output is saved in memory so it can be imported into Dry Fire at any time.</p>
           </div>
           <div class="help-card">
-            <div class="help-card-title">Match Mode</div>
-            <p>Generates a full multi-stage match card. Set the number of stages and overall difficulty level in the Match Settings panel. Each stage is independently randomized using the same global range parameters and equipment pool, ensuring variety across the card.</p>
+            <div class="help-card-title">◎ Dry Fire Mode</div>
+            <p>A perspective-based target visualizer for dry fire practice. Targets are placed on a hillside scene and scaled by distance and MOA — closer targets sit lower and appear larger; distant targets appear smaller near the horizon. No targets can exist in the sky zone. Drag targets freely to adjust position. Combine with Builder by importing your last generated stage directly into the scene.</p>
+          </div>
+        </div>
+        <div style="margin-top:12px;">
+          <div class="help-card-title" style="font-size:0.58rem; letter-spacing:0.18em; color:var(--accent); margin-bottom:8px;">BUILDER SUB-MODES</div>
+          <div class="help-grid">
+            <div class="help-card">
+              <div class="help-card-title">Single Stage</div>
+              <p>Generates one stage based on current settings. Ideal for individual training drills, testing specific positional skills, or prototyping before adding to a match card.</p>
+            </div>
+            <div class="help-card">
+              <div class="help-card-title">Match Mode</div>
+              <p>Generates a full multi-stage match card. Set stage count and difficulty in Match Settings. Each stage is independently randomized from the same range and equipment pool, ensuring variety across the card.</p>
+            </div>
           </div>
         </div>
       </div>
@@ -1073,10 +1422,78 @@
         </table>
       </div>
 
+      <!-- DRY FIRE -->
+      <div class="help-section">
+        <div class="help-section-title"><span>◆</span> Dry Fire Mode</div>
+        <p class="help-p">Dry Fire mode renders your stage plan as a perspective-scaled hillside scene. Targets are positioned and sized based on their distance and MOA value, giving you a realistic visual reference for sight picture, target transitions, and positional setup before live fire.</p>
+
+        <div class="help-grid" style="margin-bottom:12px;">
+          <div class="help-card">
+            <div class="help-card-title">Scene &amp; Perspective</div>
+            <p>The scene simulates a hillside from your shooting position. Min distance targets appear near the bottom (foreground), max distance targets appear near the horizon. The sky occupies the top ~38% of the scene — targets cannot be placed or dragged into it. Enable <strong>Sky Zone</strong> to show a visible boundary, and <strong>Dist Bands</strong> to overlay yardage ruler lines across the scene.</p>
+          </div>
+          <div class="help-card">
+            <div class="help-card-title">Target Sizing</div>
+            <p>Target pixel size is calculated from MOA and distance. A larger MOA value or shorter distance produces a bigger target on screen. A 0.5 MOA plate at 800yd will appear very small; a 4 MOA plate at 100yd will appear large. This scaling mirrors real-world apparent target size so your dry fire sight picture maps to live fire expectations.</p>
+          </div>
+        </div>
+
+        <div class="help-card-title" style="font-size:0.58rem; letter-spacing:0.18em; color:var(--accent); margin-bottom:8px;">ADDING TARGETS</div>
+        <table class="help-table" style="margin-bottom:12px;">
+          <thead><tr><th>Method</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>⊕ Import Last Stage</td>
+              <td>Reads the most recently generated Builder stage and populates the scene with all targets at their correct distances and sizes. In PRS mode, targets render as geometric steel shapes. In NRL Hunter mode, targets render as animal emoji silhouettes. Units and distance range sync automatically from the Builder. <strong>Generate a stage in Builder first</strong>, then switch to Dry Fire and import.</td>
+            </tr>
+            <tr>
+              <td>◈ Generate Examples</td>
+              <td>Drop a set of randomly spaced practice targets onto the scene. Set count, shape type (Circle, Square, IPSC, or Mixed), and MOA size. Useful for general dry fire sessions when you don't have a specific stage plan.</td>
+            </tr>
+            <tr>
+              <td>↑ Upload Custom Image</td>
+              <td>Upload any image file (PNG, JPG, SVG) to use as a target face. Set the engagement distance before uploading — the image will be scaled and positioned like any other target. Use your own steel photos, manufacturer target diagrams, or printed target images.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="help-card-title" style="font-size:0.58rem; letter-spacing:0.18em; color:var(--accent); margin-bottom:8px;">INTERACTION</div>
+        <table class="help-table">
+          <thead><tr><th>Action</th><th>Result</th></tr></thead>
+          <tbody>
+            <tr><td>Drag target</td><td>Freely reposition any target on the scene. Horizontal movement is unrestricted. Vertical movement is clamped — targets cannot be dragged into the sky zone. Works with touch on mobile.</td></tr>
+            <tr><td>Click target once</td><td>Selects the target (dashed outline). Useful for visually identifying a specific target before removing it.</td></tr>
+            <tr><td>Click selected target</td><td>Prompts to remove the target from the scene.</td></tr>
+            <tr><td>Click scene background</td><td>Deselects all targets.</td></tr>
+            <tr><td>✕ Clear All</td><td>Removes all targets from the scene instantly. Cannot be undone.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- COMBINING BUILDER AND DRY FIRE -->
+      <div class="help-section">
+        <div class="help-section-title"><span>◆</span> Using Builder + Dry Fire Together</div>
+        <p class="help-p">Builder and Dry Fire are designed to be used in sequence. The recommended workflow for a training session or match prep is:</p>
+        <div class="help-card" style="margin-bottom:10px;">
+          <div class="help-card-title">Recommended Workflow</div>
+          <p style="line-height:2; font-size:0.68rem; color:var(--text-dim);">
+            <span style="color:var(--accent-bright);">1.</span> Open <strong>Builder</strong> — set your range parameters, discipline, focus, and round mode.<br>
+            <span style="color:var(--accent-bright);">2.</span> Hit <strong>▶ GENERATE</strong> to produce a stage or full match card.<br>
+            <span style="color:var(--accent-bright);">3.</span> Review the stage card — note target count, distances, sizes, and course of fire.<br>
+            <span style="color:var(--accent-bright);">4.</span> Switch to <strong>Dry Fire</strong> using the header tab.<br>
+            <span style="color:var(--accent-bright);">5.</span> Click <strong>⊕ Import Last Stage</strong> — targets appear on the hillside at correct distances and sizes.<br>
+            <span style="color:var(--accent-bright);">6.</span> Drag targets to match your actual range layout or steel positions.<br>
+            <span style="color:var(--accent-bright);">7.</span> Practice transitions and position changes against the scaled scene before going live.
+          </p>
+        </div>
+        <p class="help-p">If your range has fixed steel, use <strong>Custom Targets</strong> in the Builder to lock specific distances and sizes, generate the stage, then import — the scene will reflect your actual range setup with accurate scaling.</p>
+        <p class="help-p">For NRL Hunter, importing a stage populates the scene with the correct animal silhouettes at their assigned distances. Use this to visualize sight picture and holdover before a field match.</p>
+      </div>
+
     </div><!-- /modal-body -->
 
     <div class="modal-footer">
-      <div class="modal-footer-text">PRS Stage &amp; Match Builder // <strong>BUILD v2.1</strong></div>
+      <div class="modal-footer-text">PRS Stage &amp; Match Builder // <strong>BUILD v1.3.1</strong></div>
       <div class="modal-footer-text">Author: <strong>Charles Witherspoon</strong> &nbsp;<a href="https://instagram.com/dubs_does" target="_blank" rel="noopener" style="color:var(--text-dim); text-decoration:none; font-size:0.6rem; letter-spacing:0.1em; transition:color 0.2s;" onmouseover="this.style.color='var(--accent-bright)'" onmouseout="this.style.color='var(--text-dim)'">&#9653; @dubs_does</a></div>
     </div>
   </div>
@@ -1104,28 +1521,34 @@
       <h1>PRS Stage Builder</h1>
       <p>PRS &amp; NRL HUNTER // MATCH &amp; STAGE GENERATOR</p>
     </div>
+    <div class="view-tabs">
+      <button class="view-tab active" onclick="switchView('builder')" id="tabBuilder">◈ BUILDER</button>
+      <button class="view-tab" onclick="switchView('dryfire')" id="tabDryFire">◎ DRY FIRE</button>
+    </div>
     <div class="header-right">
-      <div class="theme-switcher">
-        <div class="theme-switcher-label">THEME</div>
-        <div class="theme-btns">
-          <button class="theme-btn active" data-theme="amber" onclick="setTheme('amber')" title="Amber Tactical">
-            <span class="theme-swatch" style="background:#e8a832"></span>
-            <span>AMBER</span>
-          </button>
-          <button class="theme-btn" data-theme="nvg" onclick="setTheme('nvg')" title="Night Vision Green">
-            <span class="theme-swatch" style="background:#39ff39"></span>
-            <span>NVG</span>
-          </button>
-          <button class="theme-btn" data-theme="day" onclick="setTheme('day')" title="Daytime">
-            <span class="theme-swatch" style="background:#ffffff; border:1px solid #aaa"></span>
-            <span>DAY</span>
-          </button>
+      <div class="header-right-top">
+        <div class="theme-switcher">
+          <div class="theme-switcher-label">THEME</div>
+          <div class="theme-btns">
+            <button class="theme-btn active" data-theme="amber" onclick="setTheme('amber')" title="Amber Tactical">
+              <span class="theme-swatch" style="background:#e8a832"></span>
+              <span>AMBER</span>
+            </button>
+            <button class="theme-btn" data-theme="nvg" onclick="setTheme('nvg')" title="Night Vision Green">
+              <span class="theme-swatch" style="background:#39ff39"></span>
+              <span>NVG</span>
+            </button>
+            <button class="theme-btn" data-theme="day" onclick="setTheme('day')" title="Daytime">
+              <span class="theme-swatch" style="background:#ffffff; border:1px solid #aaa"></span>
+              <span>DAY</span>
+            </button>
+          </div>
         </div>
+        <button class="help-btn" onclick="openHelp()">? HELP &amp; DOCS</button>
       </div>
-      <button class="help-btn" onclick="openHelp()">? HELP &amp; DOCS</button>
       <div class="header-status">
         <div><span class="status-dot"></span>SYSTEM READY</div>
-        <div>BUILD v2.1</div>
+        <div>BUILD v1.3.1</div>
         <div style="font-size:0.58rem; margin-top:1px;">C. WITHERSPOON</div>
         <div style="font-size:0.55rem; margin-top:2px;"><a href="https://instagram.com/dubs_does" target="_blank" rel="noopener" style="color:var(--text-dim); text-decoration:none; letter-spacing:0.1em; transition:color 0.2s;" onmouseover="this.style.color='var(--accent-bright)'" onmouseout="this.style.color='var(--text-dim)'">&#9653; @dubs_does</a></div>
       </div>
@@ -1133,7 +1556,8 @@
   </div>
 </header>
 
-<!-- ═══════════════════ MAIN GRID ═══════════════════ -->
+<!-- ═══════════════════ BUILDER VIEW ═══════════════════ -->
+<div id="builderView" class="app-view active">
 <div class="main-grid">
 
   <!-- ── SIDEBAR ── -->
@@ -1285,7 +1709,136 @@
     <div id="output"></div>
   </main>
 
-</div>
+</div><!-- /main-grid -->
+</div><!-- /builderView -->
+
+<!-- ═══════════════════ DRY FIRE VIEW ═══════════════════ -->
+<div id="dryFireView">
+
+  <!-- ── DRY FIRE SIDEBAR ── -->
+  <div class="df-sidebar">
+
+    <div class="panel">
+      <div class="panel-label">Scene Setup</div>
+      <div class="field-row">
+        <label class="field-label">MIN DIST (<span id="dfMinLabel">YD</span>)</label>
+        <input type="number" id="dfMin" value="100" min="25" max="2000" style="width:90px;">
+      </div>
+      <div class="field-row">
+        <label class="field-label">MAX DIST (<span id="dfMaxLabel">YD</span>)</label>
+        <input type="number" id="dfMax" value="600" min="25" max="2000" style="width:90px;">
+      </div>
+      <div class="field-row" style="margin-top:6px;">
+        <label class="field-label">UNIT</label>
+        <select id="dfUnit" onchange="updateDfUnit()" style="width:90px;">
+          <option value="yd">Yards</option>
+          <option value="m">Meters</option>
+        </select>
+      </div>
+      <div class="field-row" style="margin-top:6px; padding-top:6px; border-top:1px solid var(--border);">
+        <label class="field-label">SHOW SKY ZONE</label>
+        <div class="mode-tabs" style="width:90px;">
+          <label style="font-size:0.6rem;"><input type="radio" name="dfSkyZone" value="no" checked onchange="toggleSkyZone()"><span>OFF</span></label>
+          <label style="font-size:0.6rem;"><input type="radio" name="dfSkyZone" value="yes" onchange="toggleSkyZone()"><span>ON</span></label>
+        </div>
+      </div>
+      <div class="field-row">
+        <label class="field-label">DIST BANDS</label>
+        <div class="mode-tabs" style="width:90px;">
+          <label style="font-size:0.6rem;"><input type="radio" name="dfBands" value="no" checked onchange="toggleBands()"><span>OFF</span></label>
+          <label style="font-size:0.6rem;"><input type="radio" name="dfBands" value="yes" onchange="toggleBands()"><span>ON</span></label>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-label">Add Targets</div>
+
+      <!-- Generate from stage -->
+      <div style="margin-bottom:10px;">
+        <div class="field-label" style="margin-bottom:6px; color:var(--text);">FROM STAGE</div>
+        <button class="gen-btn" style="font-size:0.7rem; padding:8px; margin-top:0;" onclick="importFromStage()">⊕ IMPORT LAST STAGE</button>
+      </div>
+
+      <!-- Generate example targets -->
+      <div style="margin-bottom:10px; padding-top:8px; border-top:1px solid var(--border);">
+        <div class="field-label" style="margin-bottom:6px; color:var(--text);">EXAMPLE TARGETS</div>
+        <div class="field-row">
+          <label class="field-label">COUNT</label>
+          <input type="number" id="dfExCount" value="4" min="1" max="12" style="width:70px;">
+        </div>
+        <div class="field-row">
+          <label class="field-label">TYPE</label>
+          <select id="dfExType" style="width:100px; font-size:0.7rem;">
+            <option value="circle">Circle</option>
+            <option value="square">Square</option>
+            <option value="ipsc">IPSC</option>
+            <option value="mixed">Mixed</option>
+          </select>
+        </div>
+        <div class="field-row">
+          <label class="field-label">SIZE (MOA)</label>
+          <select id="dfExMoa" style="width:100px; font-size:0.7rem;">
+            <option value="0.5">0.5 MOA</option>
+            <option value="1">1 MOA</option>
+            <option value="2" selected>2 MOA</option>
+            <option value="3">3 MOA</option>
+            <option value="4">4 MOA</option>
+          </select>
+        </div>
+        <button class="gen-btn" style="font-size:0.7rem; padding:8px; margin-top:6px;" onclick="generateExampleTargets()">⊕ GENERATE EXAMPLES</button>
+      </div>
+
+      <!-- Custom target upload -->
+      <div style="padding-top:8px; border-top:1px solid var(--border);">
+        <div class="field-label" style="margin-bottom:6px; color:var(--text);">CUSTOM IMAGE TARGET</div>
+        <div class="field-row">
+          <label class="field-label">DIST (<span id="dfCustomDistLabel">YD</span>)</label>
+          <input type="number" id="dfCustomDist" value="300" min="25" max="2000" style="width:90px;">
+        </div>
+        <button class="gen-btn" style="font-size:0.7rem; padding:8px; margin-top:4px;" onclick="document.getElementById('dfCustomUpload').click()">⊕ UPLOAD TARGET IMAGE</button>
+        <input type="file" id="dfCustomUpload" accept="image/*" onchange="addCustomTarget(event)">
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-label">Instructions</div>
+      <div style="font-size:0.62rem; color:var(--text-dim); line-height:1.7;">
+        <div>◆ Drag targets to reposition</div>
+        <div>◆ Closer targets sit lower (nearer ground)</div>
+        <div>◆ Targets sized by distance &amp; MOA</div>
+        <div>◆ Targets cannot be placed in sky</div>
+        <div>◆ Click target to select &amp; delete</div>
+      </div>
+    </div>
+
+  </div><!-- /df-sidebar -->
+
+  <!-- ── DRY FIRE CANVAS ── -->
+  <div class="df-canvas-wrap" id="dfCanvasWrap">
+    <div id="dfScene">
+      <div class="df-sky-zone" id="dfSkyZone"></div>
+      <!-- Distance band rulers injected here -->
+      <div id="dfRulers"></div>
+      <!-- Targets injected here -->
+      <div id="dfTargets"></div>
+      <div class="df-empty-hint" id="dfHint">
+        <div style="font-size:2rem; opacity:0.4;">◎</div>
+        <div>GENERATE OR IMPORT TARGETS</div>
+        <div style="font-size:0.58rem; opacity:0.6;">Drag targets to adjust position</div>
+      </div>
+    </div>
+
+    <!-- Floating toolbar -->
+    <div class="df-toolbar">
+      <button class="df-tool-btn" onclick="importFromStage()">⊕ IMPORT</button>
+      <button class="df-tool-btn" onclick="generateExampleTargets()">◈ EXAMPLES</button>
+      <button class="df-tool-btn" onclick="document.getElementById('dfCustomUpload').click()">↑ UPLOAD</button>
+      <button class="df-tool-btn danger" onclick="clearDfTargets()">✕ CLEAR ALL</button>
+    </div>
+  </div><!-- /df-canvas-wrap -->
+
+</div><!-- /dryFireView -->
 
 <!-- ═══════════════════ SCRIPT ═══════════════════ -->
 <script>
@@ -1724,6 +2277,427 @@
 
   detectDevice();
   window.addEventListener('resize', detectDevice);
+
+
+
+  /* ══════════════════════════════════════════════════════
+     VIEW SWITCHING
+  ══════════════════════════════════════════════════════ */
+  function switchView(view) {
+    const builderView = document.getElementById('builderView');
+    const dfView      = document.getElementById('dryFireView');
+    const tabB        = document.getElementById('tabBuilder');
+    const tabD        = document.getElementById('tabDryFire');
+
+    if (view === 'dryfire') {
+      builderView.style.display = 'none';
+      dfView.classList.add('active');
+      tabB.classList.remove('active');
+      tabD.classList.add('active');
+      // Sync units from builder
+      syncDfUnitsFromBuilder();
+      renderDfRulers();
+    } else {
+      builderView.style.display = '';
+      dfView.classList.remove('active');
+      tabB.classList.add('active');
+      tabD.classList.remove('active');
+    }
+  }
+
+  /* ══════════════════════════════════════════════════════
+     DRY FIRE STATE
+  ══════════════════════════════════════════════════════ */
+  let dfTargetList = []; // { id, dist, moa, shape, x, y, label, el, imgSrc }
+  let dfIdCounter  = 0;
+  let customImgSrc = null; // last uploaded custom image
+
+  // Sky zone = top 38% of canvas — no target centers above this
+  const SKY_FRACTION = 0.38;
+
+  /* ══════════════════════════════════════════════════════
+     UNIT SYNC
+  ══════════════════════════════════════════════════════ */
+  function syncDfUnitsFromBuilder() {
+    const builderUnit = getDistUnit(); // 'yd' or 'm'
+    document.getElementById('dfUnit').value = builderUnit;
+    updateDfUnit();
+
+    // Pre-fill min/max from builder if reasonable
+    const bMin = parseInt(document.getElementById('minDist').value) || 100;
+    const bMax = parseInt(document.getElementById('maxDist').value) || 600;
+    document.getElementById('dfMin').value = bMin;
+    document.getElementById('dfMax').value = bMax;
+  }
+
+  function updateDfUnit() {
+    const u = document.getElementById('dfUnit').value.toUpperCase();
+    ['dfMinLabel','dfMaxLabel','dfCustomDistLabel'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = u;
+    });
+  }
+
+  /* ══════════════════════════════════════════════════════
+     DISTANCE → VERTICAL POSITION MAPPING
+     Closer (min dist) → bottom of valid zone (near ground)
+     Farther (max dist) → top of valid zone (just below horizon)
+  ══════════════════════════════════════════════════════ */
+  function distToYPercent(dist) {
+    const minD = parseFloat(document.getElementById('dfMin').value) || 100;
+    const maxD = parseFloat(document.getElementById('dfMax').value) || 600;
+    // Clamp dist
+    const d = Math.max(minD, Math.min(maxD, dist));
+    // Normalize 0=min, 1=max
+    const t = (d - minD) / Math.max(1, maxD - minD);
+    // Map: min dist → 92% (near ground), max dist → 42% (just below horizon)
+    const yMin = 0.92; // bottom of valid placement area
+    const yMax = SKY_FRACTION + 0.04; // just below sky boundary
+    return yMin - t * (yMin - yMax);
+  }
+
+  /* ══════════════════════════════════════════════════════
+     SIZE CALCULATION
+     MOA to pixel size based on distance and canvas width
+     1 MOA ≈ 1.047" per 100yd  → scale relative to canvas
+  ══════════════════════════════════════════════════════ */
+  function moaToPx(moa, distYd) {
+    const wrap  = document.getElementById('dfCanvasWrap');
+    const w     = wrap ? wrap.offsetWidth : 800;
+    // Reference: at 100yd, 1MOA ≈ 1.047". Canvas represents ~50ft (600in) horizontal span
+    // We scale so that a 4 MOA target at 100yd is clearly visible (~3% of canvas width)
+    const refPx = w * 0.035; // reference size in px for 1 MOA at 100yd
+    const sizePx = refPx * moa * (100 / Math.max(50, distYd));
+    return Math.max(6, Math.min(w * 0.25, sizePx)); // clamp: never tiny, never huge
+  }
+
+  /* ══════════════════════════════════════════════════════
+     SKY ZONE & RULER BANDS
+  ══════════════════════════════════════════════════════ */
+  function toggleSkyZone() {
+    const on  = document.querySelector('input[name="dfSkyZone"]:checked').value === 'yes';
+    const el  = document.getElementById('dfSkyZone');
+    if (el) el.classList.toggle('show-zone', on);
+  }
+
+  function toggleBands() {
+    renderDfRulers();
+  }
+
+  function renderDfRulers() {
+    const container = document.getElementById('dfRulers');
+    if (!container) return;
+    container.innerHTML = '';
+
+    const on = document.querySelector('input[name="dfBands"]:checked').value === 'yes';
+    if (!on) return;
+
+    const minD = parseFloat(document.getElementById('dfMin').value) || 100;
+    const maxD = parseFloat(document.getElementById('dfMax').value) || 600;
+    const unit = document.getElementById('dfUnit').value;
+    const steps = 5;
+    const stepDist = (maxD - minD) / steps;
+
+    for (let i = 0; i <= steps; i++) {
+      const dist = Math.round(minD + stepDist * i);
+      const yPct = distToYPercent(dist) * 100;
+
+      const line = document.createElement('div');
+      line.className = 'df-ruler-band';
+      line.style.top = yPct + '%';
+      container.appendChild(line);
+
+      const lbl = document.createElement('div');
+      lbl.className = 'df-ruler-label';
+      lbl.style.top = yPct + '%';
+      lbl.textContent = dist + unit;
+      container.appendChild(lbl);
+    }
+  }
+
+  /* ══════════════════════════════════════════════════════
+     TARGET CREATION
+  ══════════════════════════════════════════════════════ */
+  const ANIMAL_EMOJIS = {
+    'Prairie Dog': '🐿', 'Crow': '🐦', 'Chicken': '🐔', 'Rabbit': '🐇',
+    'Squirrel': '🐿', 'Fox': '🦊', 'Coyote': '🐺', 'Turkey': '🦃',
+    'Pig': '🐷', 'Javelina': '🐗', 'Otter': '🦦', 'Bobcat': '🐱',
+    'Ram': '🐏', 'Deer': '🦌', 'Wolf': '🐺', 'Cougar': '🐆',
+    'Bear': '🐻', 'Elk': '🦌'
+  };
+
+  function createDfTarget({ dist, moa, shape, label, imgSrc, xPct }) {
+    const wrap = document.getElementById('dfTargets');
+    if (!wrap) return;
+
+    const id     = ++dfIdCounter;
+    const yPct   = distToYPercent(dist);
+    const sizePx = moaToPx(moa || 2, dist);
+
+    // Default xPct to random horizontal if not provided
+    const xFinal = (xPct !== undefined) ? xPct : 0.1 + Math.random() * 0.8;
+
+    const el = document.createElement('div');
+    el.className = 'df-target';
+    el.id = 'dft-' + id;
+    el.dataset.id = id;
+    el.style.left  = (xFinal * 100) + '%';
+    el.style.top   = (yPct * 100) + '%';
+    el.style.width  = sizePx + 'px';
+    el.style.height = sizePx + 'px';
+    el.style.zIndex = Math.round(yPct * 100); // closer = higher z
+
+    // Shape rendering
+    if (imgSrc) {
+      el.classList.add('df-shape-custom');
+      el.style.backgroundImage = `url(${imgSrc})`;
+    } else if (shape === 'circle') {
+      el.classList.add('df-shape-circle');
+    } else if (shape === 'square') {
+      el.classList.add('df-shape-square');
+    } else if (shape === 'ipsc') {
+      el.classList.add('df-shape-ipsc');
+      el.style.height = (sizePx * 1.5) + 'px';
+    } else if (shape && shape.startsWith('animal:')) {
+      const animal = shape.replace('animal:', '');
+      el.classList.add('df-shape-animal');
+      el.style.fontSize = sizePx + 'px';
+      el.style.width  = 'auto';
+      el.style.height = 'auto';
+      el.textContent = ANIMAL_EMOJIS[animal] || '🎯';
+    }
+
+    // Label
+    if (label) {
+      const lbl = document.createElement('div');
+      lbl.className = 'df-target-label';
+      lbl.textContent = label;
+      lbl.style.top = (sizePx + 4) + 'px';
+      el.appendChild(lbl);
+    }
+
+    // Click to select/delete
+    el.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (el.classList.contains('selected')) {
+        if (confirm('Remove this target?')) removeDfTarget(id);
+      } else {
+        document.querySelectorAll('.df-target.selected').forEach(t => t.classList.remove('selected'));
+        el.classList.add('selected');
+      }
+    });
+
+    // Drag
+    makeDraggable(el, id);
+
+    wrap.appendChild(el);
+    dfTargetList.push({ id, dist, moa, shape, xPct: xFinal, yPct, label, el, imgSrc });
+
+    // Hide hint
+    const hint = document.getElementById('dfHint');
+    if (hint) hint.style.display = 'none';
+
+    return id;
+  }
+
+  function removeDfTarget(id) {
+    const item = dfTargetList.find(t => t.id === id);
+    if (item && item.el) item.el.remove();
+    dfTargetList = dfTargetList.filter(t => t.id !== id);
+    if (dfTargetList.length === 0) {
+      const hint = document.getElementById('dfHint');
+      if (hint) hint.style.display = '';
+    }
+  }
+
+  function clearDfTargets() {
+    document.getElementById('dfTargets').innerHTML = '';
+    dfTargetList = [];
+    const hint = document.getElementById('dfHint');
+    if (hint) hint.style.display = '';
+  }
+
+  /* ══════════════════════════════════════════════════════
+     DRAG & DROP
+  ══════════════════════════════════════════════════════ */
+  function makeDraggable(el, id) {
+    let startX, startY, startLeft, startTop;
+
+    function getPos(e) {
+      return e.touches ? { x: e.touches[0].clientX, y: e.touches[0].clientY }
+                       : { x: e.clientX, y: e.clientY };
+    }
+
+    function onStart(e) {
+      e.preventDefault();
+      el.classList.add('dragging');
+      const p = getPos(e);
+      startX = p.x; startY = p.y;
+      startLeft = parseFloat(el.style.left);
+      startTop  = parseFloat(el.style.top);
+
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup',   onEnd);
+      document.addEventListener('touchmove', onMove, { passive: false });
+      document.addEventListener('touchend',  onEnd);
+    }
+
+    function onMove(e) {
+      e.preventDefault();
+      const wrap = document.getElementById('dfScene');
+      if (!wrap) return;
+      const rect = wrap.getBoundingClientRect();
+      const p    = getPos(e);
+
+      const dx = ((p.x - startX) / rect.width)  * 100;
+      const dy = ((p.y - startY) / rect.height) * 100;
+
+      let newLeft = startLeft + dx;
+      let newTop  = startTop  + dy;
+
+      // Clamp horizontal 0-100%
+      newLeft = Math.max(1, Math.min(99, newLeft));
+      // Clamp vertical: cannot go into sky zone (top 38%) — use center
+      const minTop = SKY_FRACTION * 100 + 2;
+      const maxTop = 96;
+      newTop = Math.max(minTop, Math.min(maxTop, newTop));
+
+      el.style.left = newLeft + '%';
+      el.style.top  = newTop  + '%';
+
+      // Update stored position
+      const item = dfTargetList.find(t => t.id === id);
+      if (item) {
+        item.xPct = newLeft / 100;
+        item.yPct = newTop  / 100;
+      }
+    }
+
+    function onEnd() {
+      el.classList.remove('dragging');
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup',   onEnd);
+      document.removeEventListener('touchmove', onMove);
+      document.removeEventListener('touchend',  onEnd);
+    }
+
+    el.addEventListener('mousedown',  onStart);
+    el.addEventListener('touchstart', onStart, { passive: false });
+  }
+
+  /* ══════════════════════════════════════════════════════
+     GENERATE EXAMPLE TARGETS
+  ══════════════════════════════════════════════════════ */
+  function generateExampleTargets() {
+    const count  = Math.max(1, parseInt(document.getElementById('dfExCount').value) || 4);
+    const type   = document.getElementById('dfExType').value;
+    const moa    = parseFloat(document.getElementById('dfExMoa').value) || 2;
+    const minD   = parseFloat(document.getElementById('dfMin').value) || 100;
+    const maxD   = parseFloat(document.getElementById('dfMax').value) || 600;
+    const unit   = document.getElementById('dfUnit').value;
+    const shapes = ['circle', 'square', 'ipsc'];
+
+    for (let i = 0; i < count; i++) {
+      const dist  = Math.round(minD + Math.random() * (maxD - minD));
+      const shape = type === 'mixed' ? shapes[i % shapes.length] : type;
+      const label = dist + unit;
+      createDfTarget({ dist, moa, shape, label });
+    }
+
+    renderDfRulers();
+  }
+
+  /* ══════════════════════════════════════════════════════
+     IMPORT FROM LAST GENERATED STAGE
+  ══════════════════════════════════════════════════════ */
+  function importFromStage() {
+    // Read from last generated stage output
+    const stageCards = document.querySelectorAll('.stage-card');
+    if (!stageCards.length) {
+      alert('No stage has been generated yet. Generate a stage in the Builder first, then import.');
+      return;
+    }
+
+    clearDfTargets();
+
+    // Sync distance settings
+    const bMin = parseFloat(document.getElementById('minDist').value) || 100;
+    const bMax = parseFloat(document.getElementById('maxDist').value) || 600;
+    document.getElementById('dfMin').value = bMin;
+    document.getElementById('dfMax').value = bMax;
+    syncDfUnitsFromBuilder();
+
+    // Use the first stage card only
+    const card = stageCards[0];
+    const rows = card.querySelectorAll('.target-table tbody tr');
+    const discipline = getDiscipline();
+    const unit = document.getElementById('dfUnit').value;
+    const units = document.getElementById('units').value; // MOA or MIL
+
+    rows.forEach((row, i) => {
+      const cells = row.querySelectorAll('td');
+      if (cells.length < 3) return;
+      const tgtId   = cells[0].textContent.trim();
+      const distTxt = cells[1].textContent.trim();
+      const sizeTxt = cells[2].textContent.trim();
+
+      // Parse distance (strip unit suffix)
+      const distNum = parseFloat(distTxt) || 300;
+      // Convert to yards if in meters
+      const distYd = (unit === 'm') ? Math.round(distNum * M_TO_YD) : distNum;
+
+      // Parse size
+      let moa = 2;
+      let shape = 'circle';
+
+      if (discipline === 'nrl') {
+        // It's an animal name
+        shape = 'animal:' + sizeTxt;
+        moa   = 2; // animals render by emoji size
+      } else {
+        // MOA or MIL value
+        const sizeNum = parseFloat(sizeTxt) || 2;
+        moa = (units === 'MIL') ? sizeNum * 3.438 : sizeNum; // convert MIL to approx MOA for sizing
+        shape = (i % 2 === 0) ? 'circle' : 'square';
+      }
+
+      const xPct = 0.08 + (i / Math.max(1, rows.length - 1)) * 0.84;
+      createDfTarget({ dist: distYd, moa, shape, label: tgtId + ' ' + distTxt, xPct });
+    });
+
+    renderDfRulers();
+  }
+
+  /* ══════════════════════════════════════════════════════
+     CUSTOM IMAGE UPLOAD
+  ══════════════════════════════════════════════════════ */
+  function addCustomTarget(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const src  = e.target.result;
+      const dist = parseFloat(document.getElementById('dfCustomDist').value) || 300;
+      const unit = document.getElementById('dfUnit').value;
+      const moa  = 3; // default visual size for custom images
+      createDfTarget({ dist, moa, shape: 'custom', label: dist + unit, imgSrc: src });
+      renderDfRulers();
+    };
+    reader.readAsDataURL(file);
+    event.target.value = ''; // reset so same file can be re-uploaded
+  }
+
+  /* Deselect targets when clicking canvas bg */
+  document.addEventListener('DOMContentLoaded', () => {
+    const scene = document.getElementById('dfScene');
+    if (scene) {
+      scene.addEventListener('click', (e) => {
+        if (e.target === scene || e.target.id === 'dfTargets' || e.target.id === 'dfRulers') {
+          document.querySelectorAll('.df-target.selected').forEach(t => t.classList.remove('selected'));
+        }
+      });
+    }
+  });
 
   /* ── init ── */
   updateMode();
