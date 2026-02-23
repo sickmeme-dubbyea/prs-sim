@@ -451,6 +451,155 @@
     line-height: 1.55;
   }
 
+
+  /* ── EQUIPMENT ROWS (enhanced) ── */
+  .eq-list { display: flex; flex-direction: column; gap: 4px; }
+
+  .eq-row {
+    display: grid;
+    grid-template-columns: 28px 1fr 52px;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 7px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    transition: border-color 0.2s;
+  }
+
+  .eq-row:hover { border-color: var(--border-bright); }
+
+  .eq-row.checked {
+    border-color: var(--accent-dim);
+    background: rgba(200,146,42,0.05);
+  }
+
+  .eq-check-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+
+  .eq-checkbox { display: none; }
+
+  .eq-box {
+    width: 14px; height: 14px;
+    border: 1px solid var(--text-dim);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg);
+    font-size: 9px;
+    color: transparent;
+    transition: all 0.15s;
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+
+  .eq-row.checked .eq-box {
+    background: var(--accent);
+    border-color: var(--accent-bright);
+    color: var(--bg);
+  }
+
+  .eq-row.checked .eq-box::after { content: '✓'; }
+
+  .eq-name {
+    font-size: 0.67rem;
+    color: var(--text-dim);
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    user-select: none;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .eq-row.checked .eq-name { color: var(--text-bright); }
+
+  .eq-count {
+    width: 44px;
+    font-size: 0.68rem;
+    padding: 3px 5px;
+    text-align: center;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--accent-bright);
+    font-family: 'Share Tech Mono', monospace;
+    -webkit-appearance: none;
+    appearance: none;
+    outline: none;
+  }
+
+  .eq-count:focus { border-color: var(--accent); }
+  .eq-count::placeholder { color: var(--text-dim); font-size: 0.6rem; }
+
+  /* Custom position add row */
+  .eq-add-row {
+    display: flex;
+    gap: 4px;
+    margin-top: 6px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+  }
+
+  .eq-custom-input {
+    flex: 1;
+    font-size: 0.68rem;
+    padding: 5px 8px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Share Tech Mono', monospace;
+    outline: none;
+    min-width: 0;
+  }
+
+  .eq-custom-input:focus { border-color: var(--accent); }
+  .eq-custom-input::placeholder { color: var(--text-dim); font-size: 0.6rem; }
+
+  .eq-add-btn {
+    padding: 5px 10px;
+    background: transparent;
+    border: 1px solid var(--accent-dim);
+    color: var(--accent-bright);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.7rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .eq-add-btn:hover { background: rgba(200,146,42,0.1); border-color: var(--accent); }
+
+  /* Remove button on custom items */
+  .eq-remove-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-dim);
+    font-size: 0.75rem;
+    cursor: pointer;
+    padding: 0 3px;
+    line-height: 1;
+    transition: color 0.15s;
+    font-family: 'Share Tech Mono', monospace;
+  }
+
+  .eq-remove-btn:hover { color: var(--red-bright); }
+
+  /* For custom rows the grid is 28px 1fr 52px 20px */
+  .eq-row.custom {
+    grid-template-columns: 28px 1fr 52px 20px;
+  }
+
+  .eq-hint {
+    font-size: 0.58rem;
+    color: var(--text-dim);
+    margin-top: 5px;
+    line-height: 1.5;
+  }
+
   /* ── MATCH PANEL ── */
   #matchPanel.hidden { opacity: 0.3; pointer-events: none; }
 
@@ -1500,16 +1649,19 @@
       <!-- EQUIPMENT -->
       <div class="help-section">
         <div class="help-section-title"><span>◆</span> Equipment &amp; Positions</div>
-        <p class="help-p">Select all positional props available at your range. The builder randomly assigns positions from this pool based on round mode — Full uses up to 3 positions, Mid uses 2, and Low uses 1. At least one piece of equipment must be selected; the builder defaults to Barricade + Prone if none are checked.</p>
+        <p class="help-p">Select all positional props available at your range. The builder draws positions from this pool based on round mode — Full uses up to 3 positions, Mid uses 2, and Low uses 1. At least one piece of equipment must be checked; the builder defaults to Barricade + Prone if none are selected.</p>
+        <p class="help-p"><strong>Position Count (#)</strong> — The optional number field to the right of each prop name sets how many times that prop can be used as a distinct position within a single stage. Leave it blank or set it to 1 for standard behavior (one position per prop). Set it to 2 or higher to allow the generator to use that prop for multiple positions in the same stage — useful for ranges with multiple barricades, stacked prone positions, or complex multi-stage props.</p>
+        <p class="help-p"><strong>Custom Positions</strong> — Type any name in the custom position field and click + ADD (or press Enter) to add it to the pool. Custom positions work identically to standard ones — they can be checked, given a count, and will appear in the stage course-of-fire output. Remove a custom position with the × button.</p>
         <table class="help-table">
           <thead><tr><th>Position</th><th>Description</th></tr></thead>
           <tbody>
-            <tr><td>Barricade</td><td>Vertical structure for standing, kneeling, or squatting supported shots. The most common PRS stage prop.</td></tr>
+            <tr><td>Barricade</td><td>Vertical structure for standing, kneeling, or squatting supported shots. The most common PRS stage prop. Set count to 2+ if your range has multiple barricades.</td></tr>
             <tr><td>Tripod</td><td>Three-legged field support. Requires deliberate deployment; often paired with standing or high kneeling positions at extended range.</td></tr>
             <tr><td>Tank Trap</td><td>X-shaped steel obstacle offering unconventional supported positions. Tests rifle handling, contact point selection, and body geometry.</td></tr>
             <tr><td>Rooftop</td><td>Elevated platform or simulated structure. Adds vertical engagement angles and challenges stability at height.</td></tr>
             <tr><td>Prone</td><td>Traditional flat-ground prone position. Lowest profile and highest natural stability — the baseline for any rifleman.</td></tr>
             <tr><td>Modified Prone</td><td>Elevated prone over a low obstacle, short bag stack, or terrain feature. Common in field-style and positional stages.</td></tr>
+            <tr><td>Custom</td><td>Any position name you define. Examples: "Round Table", "Fence Post", "Window", "Shooting Box", "Log", "Vehicle Hood". Appears in course-of-fire output exactly as entered.</td></tr>
           </tbody>
         </table>
       </div>
@@ -1799,15 +1951,18 @@
     </div>
 
     <!-- EQUIPMENT -->
-    <div class="panel">
-      <div class="panel-label">Equipment</div>
-      <div class="checkbox-grid">
-        <label class="cb-label"><input type="checkbox" value="Barricade" checked><span class="cb-box"></span>Barricade</label>
-        <label class="cb-label"><input type="checkbox" value="Tripod"><span class="cb-box"></span>Tripod</label>
-        <label class="cb-label"><input type="checkbox" value="Tank Trap"><span class="cb-box"></span>Tank Trap</label>
-        <label class="cb-label"><input type="checkbox" value="Rooftop"><span class="cb-box"></span>Rooftop</label>
-        <label class="cb-label"><input type="checkbox" value="Prone"><span class="cb-box"></span>Prone</label>
-        <label class="cb-label"><input type="checkbox" value="Modified Prone"><span class="cb-box"></span>Mod. Prone</label>
+    <div class="panel" id="equipPanel">
+      <div class="panel-label">Equipment &amp; Positions</div>
+      <div class="eq-list" id="eqList">
+        <!-- Standard equipment rows (built by JS) -->
+      </div>
+      <!-- Custom position add -->
+      <div class="eq-add-row">
+        <input type="text" class="eq-custom-input" id="eqCustomInput" placeholder="Custom position name…" maxlength="40">
+        <button class="eq-add-btn" onclick="addCustomEquipment()">+ ADD</button>
+      </div>
+      <div class="eq-hint">
+        # = max times this prop is used in one stage.<br>Leave blank to use default (1 position per prop).
       </div>
     </div>
 
@@ -2309,7 +2464,8 @@
     const units        = document.getElementById('units').value;
     const distUnit     = getDistUnit();
     const discipline   = getDiscipline();
-    let equipment      = Array.from(document.querySelectorAll('input[type=checkbox]:checked')).map(e => e.value);
+    // Build equipment pool — each checked item contributes itself N times (its count value)
+    let equipment = getEquipmentPool();
     if (!equipment.length) equipment = ['Barricade', 'Prone'];
 
     // Build locked target array padded to targetCount
@@ -2888,7 +3044,125 @@
     document.getElementById('outputToolbar').style.display = 'none';
   }
 
+
+  /* ── equipment & custom positions ── */
+
+  const STANDARD_EQUIPMENT = [
+    { name: 'Barricade',      defaultChecked: true },
+    { name: 'Tripod',         defaultChecked: false },
+    { name: 'Tank Trap',      defaultChecked: false },
+    { name: 'Rooftop',        defaultChecked: false },
+    { name: 'Prone',          defaultChecked: false },
+    { name: 'Modified Prone', defaultChecked: false },
+  ];
+
+  // Builds the full expanded position pool for stage generation.
+  // Each checked item is repeated N times (its count input value).
+  function getEquipmentPool() {
+    const pool = [];
+    document.querySelectorAll('.eq-row').forEach(row => {
+      const cb  = row.querySelector('.eq-checkbox');
+      const cnt = row.querySelector('.eq-count');
+      if (!cb || !cb.checked) return;
+      const n = Math.max(1, Math.min(10, parseInt(cnt.value) || 1));
+      for (let i = 0; i < n; i++) pool.push(cb.value);
+    });
+    return pool;
+  }
+
+  // Creates a single equipment row element
+  function makeEqRow({ name, checked = false, count = '', isCustom = false }) {
+    const row = document.createElement('div');
+    row.className = 'eq-row' + (checked ? ' checked' : '') + (isCustom ? ' custom' : '');
+
+    // Checkbox (hidden)
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.className = 'eq-checkbox';
+    cb.value = name;
+    cb.checked = checked;
+
+    // Visual checkbox box
+    const box = document.createElement('span');
+    box.className = 'eq-box';
+
+    // Wrap for click area
+    const checkWrap = document.createElement('div');
+    checkWrap.className = 'eq-check-wrap';
+    checkWrap.appendChild(cb);
+    checkWrap.appendChild(box);
+
+    // Label
+    const label = document.createElement('span');
+    label.className = 'eq-name';
+    label.textContent = name;
+    label.title = name;
+
+    // Count input
+    const countInput = document.createElement('input');
+    countInput.type = 'number';
+    countInput.className = 'eq-count';
+    countInput.min = 1;
+    countInput.max = 10;
+    countInput.placeholder = '1';
+    countInput.value = count || '';
+
+    // Toggle checked state on click (whole row or box or label)
+    function toggleRow() {
+      cb.checked = !cb.checked;
+      row.classList.toggle('checked', cb.checked);
+    }
+
+    checkWrap.addEventListener('click', toggleRow);
+    label.addEventListener('click', toggleRow);
+
+    row.appendChild(checkWrap);
+    row.appendChild(label);
+    row.appendChild(countInput);
+
+    // Remove button for custom rows
+    if (isCustom) {
+      const removeBtn = document.createElement('button');
+      removeBtn.className = 'eq-remove-btn';
+      removeBtn.textContent = '×';
+      removeBtn.title = 'Remove';
+      removeBtn.onclick = () => row.remove();
+      row.appendChild(removeBtn);
+    }
+
+    return row;
+  }
+
+  // Add a custom equipment entry from the text input
+  function addCustomEquipment() {
+    const input = document.getElementById('eqCustomInput');
+    const name  = (input.value || '').trim();
+    if (!name) { input.focus(); return; }
+
+    const list = document.getElementById('eqList');
+    list.appendChild(makeEqRow({ name, checked: true, isCustom: true }));
+    input.value = '';
+    input.focus();
+  }
+
+  // Allow Enter key in custom input to add
+  document.addEventListener('DOMContentLoaded', () => {
+    const inp = document.getElementById('eqCustomInput');
+    if (inp) inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addCustomEquipment(); } });
+  });
+
+  // Initialize equipment list from standard items
+  function initEquipment() {
+    const list = document.getElementById('eqList');
+    if (!list) return;
+    list.innerHTML = '';
+    STANDARD_EQUIPMENT.forEach(eq => {
+      list.appendChild(makeEqRow({ name: eq.name, checked: eq.defaultChecked }));
+    });
+  }
+
   /* ── init ── */
+  initEquipment();
   updateMode();
   updateDiscipline();
   updateCustomDist();

@@ -77,7 +77,8 @@
     const units        = document.getElementById('units').value;
     const distUnit     = getDistUnit();
     const discipline   = getDiscipline();
-    let equipment      = Array.from(document.querySelectorAll('input[type=checkbox]:checked')).map(e => e.value);
+    // Build equipment pool — each checked item contributes itself N times (its count value)
+    let equipment = getEquipmentPool();
     if (!equipment.length) equipment = ['Barricade', 'Prone'];
 
     // Build locked target array padded to targetCount

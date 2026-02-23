@@ -309,6 +309,155 @@
     line-height: 1.55;
   }
 
+
+  /* ── EQUIPMENT ROWS (enhanced) ── */
+  .eq-list { display: flex; flex-direction: column; gap: 4px; }
+
+  .eq-row {
+    display: grid;
+    grid-template-columns: 28px 1fr 52px;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 7px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    transition: border-color 0.2s;
+  }
+
+  .eq-row:hover { border-color: var(--border-bright); }
+
+  .eq-row.checked {
+    border-color: var(--accent-dim);
+    background: rgba(200,146,42,0.05);
+  }
+
+  .eq-check-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+
+  .eq-checkbox { display: none; }
+
+  .eq-box {
+    width: 14px; height: 14px;
+    border: 1px solid var(--text-dim);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg);
+    font-size: 9px;
+    color: transparent;
+    transition: all 0.15s;
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+
+  .eq-row.checked .eq-box {
+    background: var(--accent);
+    border-color: var(--accent-bright);
+    color: var(--bg);
+  }
+
+  .eq-row.checked .eq-box::after { content: '✓'; }
+
+  .eq-name {
+    font-size: 0.67rem;
+    color: var(--text-dim);
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    user-select: none;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .eq-row.checked .eq-name { color: var(--text-bright); }
+
+  .eq-count {
+    width: 44px;
+    font-size: 0.68rem;
+    padding: 3px 5px;
+    text-align: center;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--accent-bright);
+    font-family: 'Share Tech Mono', monospace;
+    -webkit-appearance: none;
+    appearance: none;
+    outline: none;
+  }
+
+  .eq-count:focus { border-color: var(--accent); }
+  .eq-count::placeholder { color: var(--text-dim); font-size: 0.6rem; }
+
+  /* Custom position add row */
+  .eq-add-row {
+    display: flex;
+    gap: 4px;
+    margin-top: 6px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+  }
+
+  .eq-custom-input {
+    flex: 1;
+    font-size: 0.68rem;
+    padding: 5px 8px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Share Tech Mono', monospace;
+    outline: none;
+    min-width: 0;
+  }
+
+  .eq-custom-input:focus { border-color: var(--accent); }
+  .eq-custom-input::placeholder { color: var(--text-dim); font-size: 0.6rem; }
+
+  .eq-add-btn {
+    padding: 5px 10px;
+    background: transparent;
+    border: 1px solid var(--accent-dim);
+    color: var(--accent-bright);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.7rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .eq-add-btn:hover { background: rgba(200,146,42,0.1); border-color: var(--accent); }
+
+  /* Remove button on custom items */
+  .eq-remove-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-dim);
+    font-size: 0.75rem;
+    cursor: pointer;
+    padding: 0 3px;
+    line-height: 1;
+    transition: color 0.15s;
+    font-family: 'Share Tech Mono', monospace;
+  }
+
+  .eq-remove-btn:hover { color: var(--red-bright); }
+
+  /* For custom rows the grid is 28px 1fr 52px 20px */
+  .eq-row.custom {
+    grid-template-columns: 28px 1fr 52px 20px;
+  }
+
+  .eq-hint {
+    font-size: 0.58rem;
+    color: var(--text-dim);
+    margin-top: 5px;
+    line-height: 1.5;
+  }
+
   /* ── MATCH PANEL ── */
   #matchPanel.hidden { opacity: 0.3; pointer-events: none; }
 

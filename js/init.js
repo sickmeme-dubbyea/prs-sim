@@ -1,4 +1,5 @@
 /* ── init ── */
+  initEquipment();
   updateMode();
   updateDiscipline();
   updateCustomDist();
