@@ -144,32 +144,6 @@ detectDevice()
 
 ---
 
-## Project Structure (for GitHub)
-
-```
-/
-├── index.html      ← entire application
-└── README.md       ← this file
-```
-
-That's it. GitHub Pages will serve `index.html` automatically if Pages is enabled on the repo root or `main` branch.
-
----
-
-## Deployment
-
-**GitHub Pages (current setup):**
-1. Push `index.html` to your repo
-2. Go to Settings → Pages → Source: Deploy from branch → `main` / `(root)`
-3. Done — accessible at `https://yourusername.github.io/repo-name/`
-
-**Cloudflare (DNS + Analytics):**
-- Point your domain to GitHub Pages via a CNAME record in Cloudflare
-- Enable **Cloudflare Web Analytics** (free, no-cookie, GDPR compliant) for page view tracking — just paste their snippet before `</body>`
-- Cloudflare Access can be used to add an authentication/paywall layer without changing the app code
-
----
-
 ## How to Further Develop
 
 The single-file architecture is intentional for portability, but it makes the project easy to extend. Here are the most natural development paths:
