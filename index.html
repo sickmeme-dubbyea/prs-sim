@@ -59,6 +59,18 @@
     overflow-x: hidden;
   }
 
+  /* Mobile: let the whole page scroll naturally */
+  body.is-mobile {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Desktop: page itself doesn't scroll — inner panels do */
+  body.is-desktop {
+    overflow: hidden;
+    height: 100vh;
+  }
+
   body::before {
     content: '';
     position: fixed;
@@ -231,21 +243,23 @@
   .main-grid {
     display: grid;
     grid-template-columns: 360px 1fr;
-    min-height: calc(100vh - 84px);
+    height: calc(100vh - 84px);
+    overflow: hidden;
   }
 
   /* ── SIDEBAR ── */
   .sidebar {
     background: var(--surface);
     border-right: 1px solid var(--border);
-    padding: 18px 16px 24px;
+    padding: 18px 16px 32px;
     display: flex;
     flex-direction: column;
     gap: 6px;
-    overflow-y: auto;
-    height: calc(100vh - 84px);
-    position: sticky;
-    top: 0;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    height: 100%;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
   }
 
   .panel {
@@ -472,7 +486,10 @@
   .output-area {
     padding: 22px;
     overflow-y: auto;
-    max-height: calc(100vh - 84px);
+    overflow-x: hidden;
+    height: 100%;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
   }
 
   .empty-state {
@@ -481,7 +498,7 @@
     align-items: center;
     justify-content: center;
     height: 100%;
-    min-height: 420px;
+    min-height: 280px;
     color: var(--text-dim);
     font-size: 0.68rem;
     letter-spacing: 0.2em;
@@ -843,12 +860,39 @@
 
   /* ── RESPONSIVE ── */
   @media (max-width: 820px) {
-    .main-grid { grid-template-columns: 1fr; }
-    .sidebar, .output-area { max-height: none; }
+    /* On mobile the grid stacks; each section is natural-flow and scrolls with the page */
+    .main-grid {
+      grid-template-columns: 1fr;
+      height: auto;
+      overflow: visible;
+    }
+    .sidebar {
+      height: auto;
+      max-height: none;
+      overflow-y: visible;
+      overflow-x: visible;
+      padding-bottom: 8px;
+      position: static;
+    }
+    .output-area {
+      height: auto;
+      overflow-y: visible;
+      padding-bottom: 40px;
+    }
     .stage-body { grid-template-columns: 1fr; }
     .cof-section { border-left: none; border-top: 1px solid var(--border); padding-left: 0; padding-top: 14px; }
     .header-status { display: none; }
     .help-grid { grid-template-columns: 1fr; }
+    .gen-btn { margin-bottom: 16px; }
+    /* Prevent empty state from locking scroll on mobile */
+    .empty-state { min-height: 200px; }
+    /* Collapse theme switcher label on small screens */
+    .theme-switcher-label { display: none; }
+  }
+
+  /* Tablets — slightly narrower sidebar */
+  @media (min-width: 821px) and (max-width: 1100px) {
+    .main-grid { grid-template-columns: 300px 1fr; }
   }
 </style>
 </head>
@@ -1666,6 +1710,20 @@
 
     document.getElementById('output').innerHTML = output;
   }
+
+  /* ── device detection ── */
+  function detectDevice() {
+    const ua = navigator.userAgent || navigator.vendor || window.opera;
+    const isMobileUA = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(ua);
+    const isTouchNarrow = window.innerWidth <= 820;
+    const isMobile = isMobileUA || isTouchNarrow;
+    document.body.classList.toggle('is-mobile', isMobile);
+    document.body.classList.toggle('is-desktop', !isMobile);
+    return isMobile;
+  }
+
+  detectDevice();
+  window.addEventListener('resize', detectDevice);
 
   /* ── init ── */
   updateMode();
