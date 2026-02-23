@@ -3,10 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PRS & NRL Hunter Stage Builder</title>
+<title>PRS &amp; NRL Hunter Stage Builder</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@400;600;700;900&display=swap" rel="stylesheet">
-<!-- Stylesheets -->
 <link rel="stylesheet" href="css/themes.css">
 <link rel="stylesheet" href="css/layout.css">
 <link rel="stylesheet" href="css/dryfire.css">
@@ -149,16 +148,19 @@
       <!-- EQUIPMENT -->
       <div class="help-section">
         <div class="help-section-title"><span>◆</span> Equipment &amp; Positions</div>
-        <p class="help-p">Select all positional props available at your range. The builder randomly assigns positions from this pool based on round mode — Full uses up to 3 positions, Mid uses 2, and Low uses 1. At least one piece of equipment must be selected; the builder defaults to Barricade + Prone if none are checked.</p>
+        <p class="help-p">Select all positional props available at your range. The builder draws positions from this pool based on round mode — Full uses up to 3 positions, Mid uses 2, and Low uses 1. At least one piece of equipment must be checked; the builder defaults to Barricade + Prone if none are selected.</p>
+        <p class="help-p"><strong>Position Count (#)</strong> — The optional number field to the right of each prop name sets how many times that prop can be used as a distinct position within a single stage. Leave it blank or set it to 1 for standard behavior (one position per prop). Set it to 2 or higher to allow the generator to use that prop for multiple positions in the same stage — useful for ranges with multiple barricades, stacked prone positions, or complex multi-stage props.</p>
+        <p class="help-p"><strong>Custom Positions</strong> — Type any name in the custom position field and click + ADD (or press Enter) to add it to the pool. Custom positions work identically to standard ones — they can be checked, given a count, and will appear in the stage course-of-fire output. Remove a custom position with the × button.</p>
         <table class="help-table">
           <thead><tr><th>Position</th><th>Description</th></tr></thead>
           <tbody>
-            <tr><td>Barricade</td><td>Vertical structure for standing, kneeling, or squatting supported shots. The most common PRS stage prop.</td></tr>
+            <tr><td>Barricade</td><td>Vertical structure for standing, kneeling, or squatting supported shots. The most common PRS stage prop. Set count to 2+ if your range has multiple barricades.</td></tr>
             <tr><td>Tripod</td><td>Three-legged field support. Requires deliberate deployment; often paired with standing or high kneeling positions at extended range.</td></tr>
             <tr><td>Tank Trap</td><td>X-shaped steel obstacle offering unconventional supported positions. Tests rifle handling, contact point selection, and body geometry.</td></tr>
             <tr><td>Rooftop</td><td>Elevated platform or simulated structure. Adds vertical engagement angles and challenges stability at height.</td></tr>
             <tr><td>Prone</td><td>Traditional flat-ground prone position. Lowest profile and highest natural stability — the baseline for any rifleman.</td></tr>
             <tr><td>Modified Prone</td><td>Elevated prone over a low obstacle, short bag stack, or terrain feature. Common in field-style and positional stages.</td></tr>
+            <tr><td>Custom</td><td>Any position name you define. Examples: "Round Table", "Fence Post", "Window", "Shooting Box", "Log", "Vehicle Hood". Appears in course-of-fire output exactly as entered.</td></tr>
           </tbody>
         </table>
       </div>
@@ -448,15 +450,18 @@
     </div>
 
     <!-- EQUIPMENT -->
-    <div class="panel">
-      <div class="panel-label">Equipment</div>
-      <div class="checkbox-grid">
-        <label class="cb-label"><input type="checkbox" value="Barricade" checked><span class="cb-box"></span>Barricade</label>
-        <label class="cb-label"><input type="checkbox" value="Tripod"><span class="cb-box"></span>Tripod</label>
-        <label class="cb-label"><input type="checkbox" value="Tank Trap"><span class="cb-box"></span>Tank Trap</label>
-        <label class="cb-label"><input type="checkbox" value="Rooftop"><span class="cb-box"></span>Rooftop</label>
-        <label class="cb-label"><input type="checkbox" value="Prone"><span class="cb-box"></span>Prone</label>
-        <label class="cb-label"><input type="checkbox" value="Modified Prone"><span class="cb-box"></span>Mod. Prone</label>
+    <div class="panel" id="equipPanel">
+      <div class="panel-label">Equipment &amp; Positions</div>
+      <div class="eq-list" id="eqList">
+        <!-- Standard equipment rows (built by JS) -->
+      </div>
+      <!-- Custom position add -->
+      <div class="eq-add-row">
+        <input type="text" class="eq-custom-input" id="eqCustomInput" placeholder="Custom position name…" maxlength="40">
+        <button class="eq-add-btn" onclick="addCustomEquipment()">+ ADD</button>
+      </div>
+      <div class="eq-hint">
+        # = max times this prop is used in one stage.<br>Leave blank to use default (1 position per prop).
       </div>
     </div>
 
@@ -477,7 +482,10 @@
       </div>
     </div>
 
-    <button class="gen-btn" onclick="generate()">▶ GENERATE</button>
+    <!-- Generate button wrapper — padding ensures it's never clipped -->
+    <div class="gen-btn-wrap">
+      <button class="gen-btn" onclick="generate()">▶ GENERATE</button>
+    </div>
 
   </aside>
 
@@ -631,10 +639,7 @@
   </div><!-- /df-canvas-wrap -->
 
 </div><!-- /dryFireView -->
-
-<!-- ═══════════════════ SCRIPT ═══════════════════ -->
 </body>
-<!-- JavaScript Modules (load order matters) -->
 <script src="js/data.js"></script>
 <script src="js/theme.js"></script>
 <script src="js/units.js"></script>
@@ -645,5 +650,6 @@
 <script src="js/device.js"></script>
 <script src="js/dryfire.js"></script>
 <script src="js/print.js"></script>
+<script src="js/equipment.js"></script>
 <script src="js/init.js"></script>
 </html>
