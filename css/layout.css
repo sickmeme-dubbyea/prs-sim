@@ -955,34 +955,88 @@
     .empty-state { min-height: 200px; }
 
     /* ── MOBILE HEADER ── */
-    /* Tighter outer padding */
+
+    /* Wrap into two rows so nothing gets squeezed off screen.
+       Row 1: reticle + title + view tabs (space-between)
+       Row 2: status info on left, theme+help on right          */
     .header-inner {
-      padding: 8px 10px;
-      gap: 8px;
+      flex-wrap: wrap;
+      padding: 8px 12px 6px;
+      gap: 0;
+      row-gap: 6px;
     }
 
-    /* Shrink/hide reticle on very narrow screens */
-    .reticle { width: 32px; height: 32px; }
+    /* Reticle — shrink but keep visible */
+    .reticle {
+      width: 30px;
+      height: 30px;
+      flex-shrink: 0;
+    }
 
-    /* Shrink title */
-    .header-text h1 { font-size: 1.2rem; letter-spacing: 0.06em; }
-    .header-text p  { font-size: 0.52rem; letter-spacing: 0.12em; margin-top: 2px; }
+    /* Title block — limited width, no overflow */
+    .header-text {
+      flex-shrink: 1;
+      min-width: 0;
+    }
+    .header-text h1 {
+      font-size: 1.1rem;
+      letter-spacing: 0.05em;
+    }
+    .header-text p {
+      font-size: 0.5rem;
+      letter-spacing: 0.1em;
+      margin-top: 2px;
+    }
 
-    /* Right block: stack theme+help vertically, status below */
+    /* View tabs — sit after title, flush right in row 1 */
+    .view-tabs {
+      margin-left: auto;
+      flex-shrink: 0;
+    }
+
+    /* Header-right fills the entire second row */
     .header-right {
-      flex-direction: column;
-      align-items: flex-end;
-      gap: 5px;
+      width: 100%;
+      margin-left: 0;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      border-top: 1px solid var(--border);
+      padding-top: 6px;
     }
 
-    /* Row 1: theme buttons + help side by side */
+    /* Status block — left side of row 2, all items visible */
+    .header-status {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
+      column-gap: 10px;
+      font-size: 0.54rem;
+      letter-spacing: 0.07em;
+      line-height: 1.4;
+      text-align: left;
+      white-space: nowrap;
+      flex-shrink: 1;
+      min-width: 0;
+    }
+
+    .header-status a {
+      font-size: 0.54rem;
+      white-space: nowrap;
+    }
+
+    /* Right side of row 2: theme swatches + help */
     .header-right-top {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 5px;
+      flex-shrink: 0;
     }
 
-    /* Theme buttons — vertical stack, swatches only (no text label) */
+    /* Theme switcher — horizontal, swatches only */
     .theme-switcher {
       flex-direction: row;
       align-items: center;
@@ -992,37 +1046,34 @@
     .theme-btns { flex-direction: row; gap: 3px; }
     .theme-btn {
       padding: 4px 6px;
-      font-size: 0; /* hide text label */
+      font-size: 0;
       gap: 0;
     }
     .theme-swatch { width: 10px; height: 10px; }
 
     /* Help button — compact */
     .help-btn {
-      font-size: 0.6rem;
+      font-size: 0.58rem;
       padding: 5px 8px;
-      letter-spacing: 0.1em;
+      letter-spacing: 0.08em;
       white-space: nowrap;
     }
-
-    /* Status block — visible but compact, right-aligned */
-    .header-status {
-      display: block;
-      font-size: 0.52rem;
-      letter-spacing: 0.08em;
-      line-height: 1.5;
-      text-align: right;
-    }
-
-    /* Instagram link in header — tighten */
-    .header-status a { font-size: 0.5rem; }
   }
 
-  /* Portrait phones — even tighter */
+  /* Portrait phones ≤ 430px — tighten further but keep all items */
   @media (max-width: 430px) {
-    .header-text h1 { font-size: 1rem; }
+    .header-text h1 { font-size: 0.95rem; }
     .header-text p  { display: none; }
     .reticle { width: 26px; height: 26px; }
+    .header-status {
+      font-size: 0.5rem;
+      column-gap: 7px;
+    }
+    .header-status a { font-size: 0.5rem; }
+    .view-tab {
+      font-size: 0.58rem;
+      padding: 5px 8px;
+    }
   }
 
   /* Tablets — slightly narrower sidebar */
