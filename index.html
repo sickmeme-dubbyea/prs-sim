@@ -238,12 +238,14 @@
   .sidebar {
     background: var(--surface);
     border-right: 1px solid var(--border);
-    padding: 18px 16px;
+    padding: 18px 16px 24px;
     display: flex;
     flex-direction: column;
     gap: 6px;
     overflow-y: auto;
-    max-height: calc(100vh - 84px);
+    height: calc(100vh - 84px);
+    position: sticky;
+    top: 0;
   }
 
   .panel {
@@ -757,6 +759,28 @@
     opacity: 0;
   }
 
+  /* ── CUSTOM TARGET TABLE ── */
+  #customTargetTable th:nth-child(3),
+  #customTargetTable td:nth-child(3) { min-width: 90px; }
+
+  #customTargetTable select {
+    width: 100%;
+    font-size: 0.7rem;
+    padding: 3px 5px;
+    text-align: left;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--accent-bright);
+    font-family: "Share Tech Mono", monospace;
+    -webkit-appearance: none;
+    appearance: none;
+    outline: none;
+  }
+
+  #customTargetTable select:focus {
+    border-color: var(--accent);
+  }
+
   /* ── DISTANCE UNIT LABEL (dynamic) ── */
   .dist-unit-label { color: var(--text-dim); font-size: 0.7rem; }
 
@@ -865,8 +889,8 @@
       <div class="help-section">
         <div class="help-section-title"><span>◆</span> Range Parameters &amp; Distance Table</div>
         <p class="help-p"><strong>Min / Max Distance</strong> — Define the distance window available at your range. Values are entered in whichever unit you have selected (yards or meters) in Stage Configuration. Random target distances are drawn from within this band. All values are converted to yards internally for ballistic consistency.</p>
-        <p class="help-p"><strong>Custom Distances — OFF / ON</strong> — When set to OFF, the Target Distance Table is hidden and all distances are generated randomly within your Min/Max band. Switch to ON to reveal the table and enter specific distances for any or all target slots.</p>
-        <p class="help-p"><strong>Target Distance Table</strong> — Only visible when Custom Distances is ON. Enter a specific distance for each target slot and toggle the ✓ in the USE column to lock it. Locked slots use your entered value exactly; unlocked slots fall back to random distances within the range band. The table can be collapsed with the HIDE button once distances are entered. Values update automatically when you switch distance units.</p>
+        <p class="help-p"><strong>Custom Targets — OFF / ON</strong> — When set to OFF, the Custom Targets table is hidden and all distances and plate sizes are generated automatically. Switch to ON to reveal the table and specify exact distances, plate sizes, or both for any target slot.</p>
+        <p class="help-p"><strong>Custom Targets Table</strong> — Only visible when Custom Targets is ON. Each row represents one target slot and has three inputs: a distance field (in your chosen unit), a size dropdown restricted to valid plate sizes for your selected scope unit (MOA or MIL), and a USE toggle. Toggle ✓ to lock that row — both the distance and size will be used exactly as entered. Set size to AUTO to let the focus logic choose the plate size while still locking the distance, or leave distance blank to lock only the size. The table can be collapsed with the HIDE button once values are entered. Size options update automatically when you change the scope unit (MOA/MIL).</p>
         <p class="help-p">The distance table rebuilds automatically when Target Count changes, preserving any values already entered.</p>
       </div>
 
@@ -909,11 +933,11 @@
               <td>10–12 rounds, 105 second time limit, up to 3 positions. Competition-standard complexity. Tests round management, position transitions, and sustained accuracy under time pressure.</td>
             </tr>
             <tr>
-              <td>Round Mode — Mid</td>
+              <td>Round Mode — Mid Compression</td>
               <td>6–8 rounds, 75–90 seconds, 2 positions. A balanced format that rewards efficient position setup and clean shot execution over brute speed.</td>
             </tr>
             <tr>
-              <td>Round Mode — Low</td>
+              <td>Round Mode — Low Compression</td>
               <td>4–6 rounds, 45–60 seconds, 1 position. Fast and decisive. Favors cold-bore first-round hit capability and rapid target acquisition. Ideal for speed drills.</td>
             </tr>
             <tr>
@@ -1068,7 +1092,7 @@
         <input type="number" id="maxDist" value="800" min="50" max="2000">
       </div>
       <div class="field-row" style="margin-top:8px; padding-top:8px; border-top:1px solid var(--border);">
-        <label class="field-label">CUSTOM DISTANCES</label>
+        <label class="field-label">CUSTOM TARGETS</label>
         <div class="mode-tabs" style="width:115px;">
           <label style="font-size:0.65rem;"><input type="radio" name="customDist" value="no" checked onchange="updateCustomDist()"><span>OFF</span></label>
           <label style="font-size:0.65rem;"><input type="radio" name="customDist" value="yes" onchange="updateCustomDist()"><span>ON</span></label>
@@ -1104,8 +1128,8 @@
         <label class="field-label">ROUND MODE</label>
         <select id="roundMode">
           <option value="full">Full</option>
-          <option value="mid">Mid</option>
-          <option value="low">Low</option>
+          <option value="mid">Mid Compression</option>
+          <option value="low">Low Compression</option>
         </select>
       </div>
       <div class="field-row">
@@ -1117,24 +1141,25 @@
       </div>
     </div>
 
-    <!-- TARGET DISTANCE TABLE -->
+    <!-- CUSTOM TARGET TABLE -->
     <div class="panel" id="distPanel" style="display:none;">
       <div class="panel-header" onclick="toggleDistPanel()">
-        <div class="panel-label" style="margin-bottom:0; flex:1;">Target Distances (<span id="distPanelUnit">yd</span>)</div>
+        <div class="panel-label" style="margin-bottom:0; flex:1;">Custom Targets (<span id="distPanelUnit">yd</span>)</div>
         <button class="panel-toggle" id="distPanelToggle">▲ HIDE</button>
       </div>
       <div class="panel-collapsible" id="distPanelBody" style="margin-top:11px;">
-        <table class="dist-input-table">
+        <table class="dist-input-table" id="customTargetTable">
           <thead>
             <tr>
               <th>TGT</th>
-              <th>DISTANCE (<span id="distTableUnit">YD</span>)</th>
-              <th style="text-align:center">USE</th>
+              <th>DIST (<span id="distTableUnit">YD</span>)</th>
+              <th>SIZE</th>
+              <th style="text-align:center;width:34px;">USE</th>
             </tr>
           </thead>
           <tbody id="distTableBody"></tbody>
         </table>
-        <div class="dist-note">Toggle ✓ to lock a distance. Unlocked slots use random values within range parameters.</div>
+        <div class="dist-note">Toggle ✓ to lock a target's distance and/or size. Leave size as AUTO to let focus logic choose. Unlocked distance slots use random values within range parameters.</div>
       </div>
     </div>
 
@@ -1295,41 +1320,79 @@
     btn.textContent = body.classList.contains('collapsed') ? '▼ SHOW' : '▲ HIDE';
   }
 
+  function getSizeOptions(units) {
+    const opts = units === 'MOA' ? MOA_OPTIONS : MIL_OPTIONS;
+    return opts;
+  }
+
+  function buildSizeSelect(units, selectedVal) {
+    const opts = getSizeOptions(units);
+    let html = `<select onchange="">`;
+    html += `<option value="auto"${selectedVal === 'auto' ? ' selected' : ''}>AUTO</option>`;
+    opts.forEach(o => {
+      html += `<option value="${o}"${String(selectedVal) === String(o) ? ' selected' : ''}>${o} ${units}</option>`;
+    });
+    html += `</select>`;
+    return html;
+  }
+
   function rebuildDistTable() {
     const count = Math.max(1, Math.min(10, parseInt(document.getElementById('targetCount').value) || 4));
+    const units = document.getElementById('units').value;
     const tbody = document.getElementById('distTableBody');
 
     // Preserve existing row values
-    const prev = Array.from(tbody.querySelectorAll('tr')).map(tr => ({
-      val: tr.querySelector('input').value,
-      active: tr.querySelector('.dist-toggle').classList.contains('active')
-    }));
+    const prev = Array.from(tbody.querySelectorAll('tr')).map(tr => {
+      const inp = tr.querySelector('input');
+      const sel = tr.querySelector('select');
+      const tog = tr.querySelector('.dist-toggle');
+      return {
+        val:    inp  ? inp.value  : '',
+        size:   sel  ? sel.value  : 'auto',
+        active: tog  ? tog.classList.contains('active') : false
+      };
+    });
 
     tbody.innerHTML = '';
     for (let i = 0; i < count; i++) {
-      const p = prev[i] || { val: '', active: false };
+      const p = prev[i] || { val: '', size: 'auto', active: false };
       const tr = document.createElement('tr');
       tr.innerHTML =
         `<td class="dist-id">T${i + 1}</td>` +
-        `<td><input type="number" min="1" max="5000" placeholder="random" value="${p.val}"></td>` +
+        `<td><input type="number" min="1" max="5000" placeholder="rnd" value="${p.val}"></td>` +
+        `<td>${buildSizeSelect(units, p.size)}</td>` +
         `<td class="dist-use"><div class="dist-toggle${p.active ? ' active' : ''}" onclick="toggleDist(this)">${p.active ? '✓' : ''}</div></td>`;
       tbody.appendChild(tr);
     }
   }
+
+  // Rebuild table when units change so size options update
+  document.addEventListener('change', function(e) {
+    if (e.target && e.target.id === 'units') rebuildDistTable();
+  });
 
   function toggleDist(el) {
     el.classList.toggle('active');
     el.textContent = el.classList.contains('active') ? '✓' : '';
   }
 
-  function getLockedDistances() {
-    // Always returns values in yards internally
+  function getLockedTargets() {
+    // Returns array of {dist, size} — dist in yards internally, size null if AUTO
     return Array.from(document.querySelectorAll('#distTableBody tr')).map(tr => {
-      const active = tr.querySelector('.dist-toggle').classList.contains('active');
-      const val    = parseInt(tr.querySelector('input').value);
-      if (!active || !(val > 0)) return null;
-      return toYards(val);
+      const active  = tr.querySelector('.dist-toggle').classList.contains('active');
+      const distVal = parseInt(tr.querySelector('input').value);
+      const sizeEl  = tr.querySelector('select');
+      const sizeVal = sizeEl ? sizeEl.value : 'auto';
+      return {
+        dist: (active && distVal > 0) ? toYards(distVal) : null,
+        size: (active && sizeVal !== 'auto') ? parseFloat(sizeVal) : null
+      };
     });
+  }
+
+  // Keep backward-compatible alias used by generateDistances
+  function getLockedDistances() {
+    return getLockedTargets().map(t => t.dist);
   }
 
   /* ── stage logic ── */
@@ -1397,15 +1460,21 @@
     let equipment     = Array.from(document.querySelectorAll('input[type=checkbox]:checked')).map(e => e.value);
     if (!equipment.length) equipment = ['Barricade', 'Prone'];
 
-    // Build locked distance array padded to targetCount (always in yards internally)
-    const locked = getLockedDistances().slice(0, targetCount);
-    while (locked.length < targetCount) locked.push(null);
+    // Build locked target array padded to targetCount
+    const lockedTargets = getLockedTargets().slice(0, targetCount);
+    while (lockedTargets.length < targetCount) lockedTargets.push({ dist: null, size: null });
+
+    const lockedDists = lockedTargets.map(t => t.dist);
 
     // generateDistances returns yards; convert for display
-    const distancesYd = generateDistances(globalMin, globalMax, targetCount, locked);
+    const distancesYd = generateDistances(globalMin, globalMax, targetCount, lockedDists);
     const distancesDisplay = distancesYd.map(d => distUnit === 'm' ? Math.round(d * YD_TO_M) : d);
 
-    let targets = distancesDisplay.map((d, i) => ({ id: 'T' + (i + 1), distance: d, size: pickPlate(focus, units) }));
+    let targets = distancesDisplay.map((d, i) => ({
+      id: 'T' + (i + 1),
+      distance: d,
+      size: lockedTargets[i].size !== null ? lockedTargets[i].size : pickPlate(focus, units)
+    }));
     targets = shuffle(targets);
 
     const roundProfile    = getRoundProfile(roundMode);
