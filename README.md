@@ -1,7 +1,7 @@
 # PRS & NRL Hunter Stage Builder
 ### v1.3.1
 
-A fully self-contained, single-file web application for designing randomized **Precision Rifle Series (PRS)** and **NRL Hunter** competition stages, match cards, and dry fire training sessions. No server, no framework, no dependencies beyond two Google Fonts — drop `index.html` anywhere and it runs.
+A fully self-contained, single-file web application for designing randomized **Precision Rifle Series (PRS)** and **NRL Hunter** competition stages, match cards, and dry fire training sessions. No server, no framework, no dependencies beyond two Google Fonts — drop `index-mono.html` anywhere and it runs.
 
 ---
 
