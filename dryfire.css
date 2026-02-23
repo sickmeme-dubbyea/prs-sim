@@ -1,0 +1,264 @@
+/* ══════════════════════════════════════════
+     DRY FIRE MODE
+  ══════════════════════════════════════════ */
+
+  /* Top-level app view switcher */
+  .app-view { display: none; }
+  .app-view.active { display: flex; flex-direction: column; width: 100%; }
+
+  /* Main grid is itself a view */
+  .main-grid { display: grid; }
+  .main-grid.active { display: grid; }
+
+  /* Header mode pill */
+  .view-tabs {
+    display: flex;
+    gap: 0;
+    margin-left: 12px;
+    flex-shrink: 0;
+  }
+
+  .view-tab {
+    padding: 6px 14px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .view-tab:first-child { border-right: none; }
+  .view-tab.active {
+    background: rgba(200,146,42,0.12);
+    border-color: var(--accent-dim);
+    color: var(--accent-bright);
+  }
+
+  .view-tab:hover:not(.active) { color: var(--text); background: rgba(255,255,255,0.03); }
+
+  /* ── DRY FIRE LAYOUT ── */
+  #dryFireView {
+    flex: 1;
+    display: none;
+    flex-direction: row;
+    height: calc(100vh - 84px);
+    overflow: hidden;
+  }
+
+  #dryFireView.active { display: flex; }
+
+  /* Dry fire sidebar */
+  .df-sidebar {
+    width: 260px;
+    min-width: 260px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 14px 12px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Dry fire canvas area */
+  .df-canvas-wrap {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    background: #1a2a1a;
+    cursor: crosshair;
+  }
+
+  /* The scene canvas — hillside perspective */
+  #dfScene {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      to bottom,
+      #3a5a7a 0%,        /* sky top */
+      #6a9abf 28%,       /* sky lower */
+      #7aaa5a 42%,       /* treeline/horizon */
+      #4a6a32 55%,       /* near hillside */
+      #3a5228 70%,       /* ground mid */
+      #2a3a1e 100%       /* ground near */
+    );
+    background-attachment: local;
+  }
+
+  /* Sky zone — targets cannot be placed here */
+  .df-sky-zone {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 38%;
+    pointer-events: none;
+    z-index: 2;
+    /* subtle indicator — only visible in edit mode */
+  }
+
+  .df-sky-zone.show-zone {
+    background: repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 8px,
+      rgba(100,160,220,0.06) 8px,
+      rgba(100,160,220,0.06) 16px
+    );
+    border-bottom: 1px dashed rgba(100,160,220,0.25);
+  }
+
+  /* Target element on canvas */
+  .df-target {
+    position: absolute;
+    cursor: grab;
+    user-select: none;
+    transform: translate(-50%, -50%);
+    transition: filter 0.15s;
+    touch-action: none;
+  }
+
+  .df-target:hover { filter: brightness(1.35); z-index: 50; }
+  .df-target.dragging { cursor: grabbing; z-index: 100; filter: brightness(1.5); }
+  .df-target.selected { outline: 1px dashed var(--accent-bright); outline-offset: 3px; }
+
+  .df-target-label {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    color: var(--accent-bright);
+    background: rgba(0,0,0,0.65);
+    padding: 1px 4px;
+    border-radius: 2px;
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  /* Steel plate target shapes */
+  .df-shape-circle {
+    border-radius: 50%;
+    background: #b0b8a8;
+    border: 2px solid #e8dfc8;
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.4), inset 0 1px 3px rgba(255,255,255,0.15);
+  }
+
+  .df-shape-square {
+    background: #b0b8a8;
+    border: 2px solid #e8dfc8;
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.4), inset 0 1px 3px rgba(255,255,255,0.15);
+  }
+
+  .df-shape-ipsc {
+    background: #c8b888;
+    border: 2px solid #e8dfc8;
+    border-radius: 35% 35% 0 0 / 25% 25% 0 0;
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.4);
+    clip-path: polygon(20% 0%, 80% 0%, 100% 35%, 100% 100%, 0% 100%, 0% 35%);
+  }
+
+  .df-shape-animal {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: inherit;
+    filter: drop-shadow(0 1px 3px rgba(0,0,0,0.7));
+    line-height: 1;
+  }
+
+  .df-shape-custom {
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+
+  /* Distance ruler line (horizontal) */
+  .df-ruler-band {
+    position: absolute;
+    left: 0; right: 0;
+    border-top: 1px dashed rgba(200,146,42,0.2);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .df-ruler-label {
+    position: absolute;
+    right: 6px;
+    transform: translateY(-50%);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    color: rgba(200,146,42,0.5);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* ── DRY FIRE CONTROLS ── */
+  .df-toolbar {
+    position: absolute;
+    bottom: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 6px;
+    z-index: 200;
+    background: rgba(13,15,12,0.85);
+    border: 1px solid var(--border);
+    padding: 7px 10px;
+    backdrop-filter: blur(4px);
+  }
+
+  .df-tool-btn {
+    padding: 5px 12px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+
+  .df-tool-btn:hover { border-color: var(--accent-dim); color: var(--accent-bright); }
+  .df-tool-btn.active { background: rgba(200,146,42,0.15); border-color: var(--accent); color: var(--accent-bright); }
+  .df-tool-btn.danger { color: var(--red-bright); border-color: var(--red); }
+  .df-tool-btn.danger:hover { background: rgba(200,90,58,0.15); }
+
+  /* Upload input hidden */
+  #dfCustomUpload { display: none; }
+
+  /* Dry fire empty state */
+  .df-empty-hint {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(200,210,180,0.25);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.18em;
+    pointer-events: none;
+    z-index: 1;
+    text-align: center;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  /* Mobile dry fire adjustments */
+  @media (max-width: 820px) {
+    #dryFireView { flex-direction: column; height: auto; }
+    .df-sidebar { width: 100%; min-width: 0; border-right: none; border-bottom: 1px solid var(--border); }
+    .df-canvas-wrap { height: 70vw; min-height: 300px; }
+    .df-toolbar { bottom: 6px; padding: 5px 7px; flex-wrap: wrap; justify-content: center; }
+  }

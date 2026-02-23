@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="amber">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PRS & NRL Hunter Stage Builder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@400;600;700;900&display=swap" rel="stylesheet">
+<!-- Stylesheets -->
+<link rel="stylesheet" href="css/themes.css">
+<link rel="stylesheet" href="css/layout.css">
+<link rel="stylesheet" href="css/dryfire.css">
+<link rel="stylesheet" href="css/print.css">
+</head>
+<body>
+
+<!-- ═══════════════════ HELP MODAL ═══════════════════ -->
+<div class="modal-overlay" id="helpModal" onclick="closeHelpOnBg(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">◈ Documentation &amp; Reference</div>
+      <button class="modal-close" onclick="closeHelp()">✕ CLOSE</button>
+    </div>
+
+    <div class="modal-body">
+
+      <!-- OVERVIEW -->
+      <div class="help-section">
+        <div class="help-section-title"><span>◆</span> Overview</div>
+        <p class="help-p">The PRS &amp; NRL Hunter Stage Builder is a two-mode training and match-design tool for Precision Rifle Series and NRL Hunter competitors. It combines a <strong>Stage Builder</strong> for generating randomized match plans with a <strong>Dry Fire</strong> visualizer for turning those plans into a scaled, interactive target scene you can practice against.</p>
+        <p class="help-p">Use the <strong>◈ BUILDER</strong> and <strong>◎ DRY FIRE</strong> tabs in the header to switch between the two modes. They are designed to work together — build a stage, then import it directly into Dry Fire for a visual walk-through before you ever step to the line.</p>
+      </div>
+
+      <!-- MODES -->
+      <div class="help-section">
+        <div class="help-section-title"><span>◆</span> Application Modes</div>
+        <div class="help-grid">
+          <div class="help-card">
+            <div class="help-card-title">◈ Builder Mode</div>
+            <p>The primary stage and match design tool. Configure your range, discipline, equipment, and difficulty, then hit Generate to produce a fully randomized stage or multi-stage match card with target distances, plate sizes, round counts, time limits, and positional course-of-fire sequences. All output is saved in memory so it can be imported into Dry Fire at any time.</p>
+          </div>
+          <div class="help-card">
+            <div class="help-card-title">◎ Dry Fire Mode</div>
+            <p>A perspective-based target visualizer for dry fire practice. Targets are placed on a hillside scene and scaled by distance and MOA — closer targets sit lower and appear larger; distant targets appear smaller near the horizon. No targets can exist in the sky zone. Drag targets freely to adjust position. Combine with Builder by importing your last generated stage directly into the scene.</p>
+          </div>
+        </div>
+        <div style="margin-top:12px;">
+          <div class="help-card-title" style="font-size:0.58rem; letter-spacing:0.18em; color:var(--accent); margin-bottom:8px;">BUILDER SUB-MODES</div>
+          <div class="help-grid">
+            <div class="help-card">
+              <div class="help-card-title">Single Stage</div>
+              <p>Generates one stage based on current settings. Ideal for individual training drills, testing specific positional skills, or prototyping before adding to a match card.</p>
+            </div>
+            <div class="help-card">
+              <div class="help-card-title">Match Mode</div>
+              <p>Generates a full multi-stage match card. Set stage count and difficulty in Match Settings. Each stage is independently randomized from the same range and equipment pool, ensuring variety across the card.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DISCIPLINE -->
+      <div class="help-section">
+        <div class="help-section-title"><span>◆</span> Discipline</div>
+        <div class="help-grid">
+          <div class="help-card">
+            <div class="help-card-title">PRS — Precision Rifle Series</div>
+            <p>Generates stages using angular plate sizes in <strong>MOA</strong> or <strong>MIL</strong>. Scope Units selector is active. Focus logic controls plate size selection from the defined MOA/MIL pools. Custom Targets size dropdown shows numeric plate sizes.</p>
+          </div>
+          <div class="help-card">
+            <div class="help-card-title">NRL Hunter</div>
+            <p>Generates stages using animal silhouettes drawn from the full NRL Hunter target catalog, organized into three difficulty tiers. Scope Units selector is hidden. Focus logic maps to tiers — <strong>Small</strong> draws only Tier 1; <strong>Wind</strong> draws Tier 1–2; <strong>Elevation</strong> draws Tier 2–3; <strong>Balanced/Combined</strong> draw from all tiers. Custom Targets dropdown shows animals grouped by size tier.</p>
+            <p style="margin-top:6px; font-size:0.64rem; color:var(--text-dim); line-height:1.5;">
+              <strong style="color:var(--text);">Tier 1 — Small:</strong> Prairie Dog, Crow, Chicken, Rabbit, Squirrel<br>
+              <strong style="color:var(--text);">Tier 2 — Medium:</strong> Fox, Coyote, Turkey, Pig, Javelina, Otter, Bobcat<br>
+              <strong style="color:var(--text);">Tier 3 — Large:</strong> Ram, Deer, Wolf, Cougar, Bear, Elk
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- RANGE PARAMETERS -->
+      <div class="help-section">
+        <div class="help-section-title"><span>◆</span> Range Parameters &amp; Distance Table</div>
+        <p class="help-p"><strong>Min / Max Distance</strong> — Define the distance window available at your range. Values are entered in whichever unit you have selected (yards or meters) in Stage Configuration. Random target distances are drawn from within this band. All values are converted to yards internally for ballistic consistency.</p>
+        <p class="help-p"><strong>Custom Targets — OFF / ON</strong> — When set to OFF, the Custom Targets table is hidden and all distances and plate sizes are generated automatically. Switch to ON to reveal the table and specify exact distances, plate sizes, or both for any target slot.</p>
+        <p class="help-p"><strong>Custom Targets Table</strong> — Only visible when Custom Targets is ON. Each row represents one target slot and has three inputs: a distance field (in your chosen unit), a size dropdown restricted to valid plate sizes for your selected scope unit (MOA or MIL), and a USE toggle. Toggle ✓ to lock that row — both the distance and size will be used exactly as entered. Set size to AUTO to let the focus logic choose the plate size while still locking the distance, or leave distance blank to lock only the size. The table can be collapsed with the HIDE button once values are entered. Size options update automatically when you change the scope unit (MOA/MIL).</p>
+        <p class="help-p">The distance table rebuilds automatically when Target Count changes, preserving any values already entered.</p>
+      </div>
+
+      <!-- STAGE CONFIGURATION -->
+      <div class="help-section">
+        <div class="help-section-title"><span>◆</span> Stage Configuration</div>
+        <table class="help-table">
+          <thead><tr><th>Setting</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>Target Count</td>
+              <td>Number of steel targets in the stage (1–10). Each target receives a randomized distance (unless locked), a plate size based on focus, and a round allocation.</td>
+            </tr>
+            <tr>
+              <td>Distance Unit</td>
+              <td>Sets whether all distances are displayed in <strong>Yards (yd)</strong> or <strong>Meters (m)</strong>. Switching units automatically converts the Min/Max range parameters and any values entered in the Target Distance Table. Internal calculations always use yards for ballistic accuracy; meter values are converted on input and display only.</td>
+            </tr>
+            <tr>
+              <td>Focus — Balanced</td>
+              <td>Pulls plate sizes from the full MOA/MIL options pool. Best for general-purpose stages with varied challenge.</td>
+            </tr>
+            <tr>
+              <td>Focus — Wind</td>
+              <td>Biases toward mid-size plates at longer distances where horizontal wind drift is the dominant accuracy challenge.</td>
+            </tr>
+            <tr>
+              <td>Focus — Elevation</td>
+              <td>Selects mid-to-large plates with an emphasis on stages where vertical hold is the primary difficulty — useful for valley or hillside ranges.</td>
+            </tr>
+            <tr>
+              <td>Focus — Small Target</td>
+              <td>Restricts plate sizes to the smallest two options in the pool. Maximum accuracy demand; recommended for advanced shooters only.</td>
+            </tr>
+            <tr>
+              <td>Focus — Combined</td>
+              <td>Unrestricted random size selection across the entire pool. Greatest variety; simulates unpredictable match conditions.</td>
+            </tr>
+            <tr>
+              <td>Round Mode — Full</td>
+              <td>10–12 rounds, 105 second time limit, up to 3 positions. Competition-standard complexity. Tests round management, position transitions, and sustained accuracy under time pressure.</td>
+            </tr>
+            <tr>
+              <td>Round Mode — Mid Compression</td>
+              <td>6–8 rounds, 75–90 seconds, 2 positions. A balanced format that rewards efficient position setup and clean shot execution over brute speed.</td>
+            </tr>
+            <tr>
+              <td>Round Mode — Low Compression</td>
+              <td>4–6 rounds, 45–60 seconds, 1 position. Fast and decisive. Favors cold-bore first-round hit capability and rapid target acquisition. Ideal for speed drills.</td>
+            </tr>
+            <tr>
+              <td>Scope Units</td>
+              <td>Display plate sizes in <strong>MOA</strong> (Minutes of Angle) or <strong>MIL</strong> (Milliradians) to match your scope's reticle and turret system. Hidden in NRL Hunter mode.</td>
+            </tr>
+            <tr>
+              <td>Custom Time (sec)</td>
+              <td>Override the automatically calculated time limit with a specific value in seconds. Leave blank to use the default time for the selected Round Mode (105 sec for Full, 75–90 for Mid, 45–60 for Low). Useful for field matches, club events, or training sessions with fixed time windows.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- EQUIPMENT -->
+      <div class="help-section">
+        <div class="help-section-title"><span>◆</span> Equipment &amp; Positions</div>
+        <p class="help-p">Select all positional props available at your range. The builder randomly assigns positions from this pool based on round mode — Full uses up to 3 positions, Mid uses 2, and Low uses 1. At least one piece of equipment must be selected; the builder defaults to Barricade + Prone if none are checked.</p>
+        <table class="help-table">
+          <thead><tr><th>Position</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td>Barricade</td><td>Vertical structure for standing, kneeling, or squatting supported shots. The most common PRS stage prop.</td></tr>
+            <tr><td>Tripod</td><td>Three-legged field support. Requires deliberate deployment; often paired with standing or high kneeling positions at extended range.</td></tr>
+            <tr><td>Tank Trap</td><td>X-shaped steel obstacle offering unconventional supported positions. Tests rifle handling, contact point selection, and body geometry.</td></tr>
+            <tr><td>Rooftop</td><td>Elevated platform or simulated structure. Adds vertical engagement angles and challenges stability at height.</td></tr>
+            <tr><td>Prone</td><td>Traditional flat-ground prone position. Lowest profile and highest natural stability — the baseline for any rifleman.</td></tr>
+            <tr><td>Modified Prone</td><td>Elevated prone over a low obstacle, short bag stack, or terrain feature. Common in field-style and positional stages.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- MATCH DIFFICULTY -->
+      <div class="help-section">
+        <div class="help-section-title"><span>◆</span> Match Difficulty</div>
+        <p class="help-p">Match difficulty defines the overall tier of a generated match and is intended to guide stage design intent for match directors. The builder uses this setting as a reference level — future versions will modulate plate sizes, distances, and time limits automatically based on the selected tier.</p>
+        <table class="help-table">
+          <thead><tr><th>Level</th><th>Intended Use &amp; Design Guidelines</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>Club <span class="badge badge-club">Beginner</span></td>
+              <td>Entry-level match format. Shorter distances (150–500 yd), larger plate sizes (2–4 MOA / 0.7–1.2 MIL), generous time limits, and simpler positions (barricade, prone). Designed to introduce new competitors to stage format, position deployment, and time management without overwhelming them. Recommended stage count: 4–6.</td>
+            </tr>
+            <tr>
+              <td>Regional <span class="badge badge-regional">Intermediate</span></td>
+              <td>Mid-tier competitive format. Engagements at 300–700 yd, mixed plate sizes (1–3 MOA / 0.3–0.7 MIL), moderate time pressure, 2-position stages common. Assumes familiarity with positional shooting, wind reading at distance, and basic ballistic compensation. Recommended stage count: 6–10.</td>
+            </tr>
+            <tr>
+              <td>National <span class="badge badge-national">Expert</span></td>
+              <td>High-level competition format. Extended ranges (600–1000+ yd), small plate emphasis (0.5–1.5 MOA / 0.2–0.5 MIL), compressed time windows (45–90 sec for many stages), and unconventional or stacked positions. Built for experienced competitors who can rapidly solve ballistic problems and maintain composure under time and positional stress. Recommended stage count: 10–16.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- READING OUTPUT -->
+      <div class="help-section">
+        <div class="help-section-title"><span>◆</span> Reading the Stage Output</div>
+        <table class="help-table">
+          <thead><tr><th>Field</th><th>Meaning</th></tr></thead>
+          <tbody>
+            <tr><td>Time Limit</td><td>Total seconds to expend all allocated rounds across all positions in the stage.</td></tr>
+            <tr><td>Total Rds</td><td>Total rounds to be fired in the stage, distributed across all targets.</td></tr>
+            <tr><td>Positions</td><td>Number of distinct prop or position changes required within the stage.</td></tr>
+            <tr><td>Dist</td><td>Target engagement distance displayed in your chosen unit (yards or meters). If a distance was locked in the Target Distance Table, that exact value is used. All distances are converted to yards internally for ballistic calculations.</td></tr>
+            <tr><td>Size / Animal</td><td>In PRS mode: target plate angular size in MOA or MIL — smaller values are harder at any given distance. In NRL Hunter mode: the animal silhouette (Chicken, Pig, Turkey, Ram) — Chicken is the smallest and hardest, Ram is the largest.</td></tr>
+            <tr><td>Rds</td><td>Total rounds allocated to that specific target across all positions in the stage.</td></tr>
+            <tr><td>Course of Fire</td><td>Per-position engagement sequence. Arrows (›) indicate shot order. The sequence is randomized to avoid consecutive shots on the same target where possible.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- DRY FIRE -->
+      <div class="help-section">
+        <div class="help-section-title"><span>◆</span> Dry Fire Mode</div>
+        <p class="help-p">Dry Fire mode renders your stage plan as a perspective-scaled hillside scene. Targets are positioned and sized based on their distance and MOA value, giving you a realistic visual reference for sight picture, target transitions, and positional setup before live fire.</p>
+
+        <div class="help-grid" style="margin-bottom:12px;">
+          <div class="help-card">
+            <div class="help-card-title">Scene &amp; Perspective</div>
+            <p>The scene simulates a hillside from your shooting position. Min distance targets appear near the bottom (foreground), max distance targets appear near the horizon. The sky occupies the top ~38% of the scene — targets cannot be placed or dragged into it. Enable <strong>Sky Zone</strong> to show a visible boundary, and <strong>Dist Bands</strong> to overlay yardage ruler lines across the scene.</p>
+          </div>
+          <div class="help-card">
+            <div class="help-card-title">Target Sizing</div>
+            <p>Target pixel size is calculated from MOA and distance. A larger MOA value or shorter distance produces a bigger target on screen. A 0.5 MOA plate at 800yd will appear very small; a 4 MOA plate at 100yd will appear large. This scaling mirrors real-world apparent target size so your dry fire sight picture maps to live fire expectations.</p>
+          </div>
+        </div>
+
+        <div class="help-card-title" style="font-size:0.58rem; letter-spacing:0.18em; color:var(--accent); margin-bottom:8px;">ADDING TARGETS</div>
+        <table class="help-table" style="margin-bottom:12px;">
+          <thead><tr><th>Method</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>⊕ Import Last Stage</td>
+              <td>Reads the most recently generated Builder stage and populates the scene with all targets at their correct distances and sizes. In PRS mode, targets render as geometric steel shapes. In NRL Hunter mode, targets render as animal emoji silhouettes. Units and distance range sync automatically from the Builder. <strong>Generate a stage in Builder first</strong>, then switch to Dry Fire and import.</td>
+            </tr>
+            <tr>
+              <td>◈ Generate Examples</td>
+              <td>Drop a set of randomly spaced practice targets onto the scene. Set count, shape type (Circle, Square, IPSC, or Mixed), and MOA size. Useful for general dry fire sessions when you don't have a specific stage plan.</td>
+            </tr>
+            <tr>
+              <td>↑ Upload Custom Image</td>
+              <td>Upload any image file (PNG, JPG, SVG) to use as a target face. Set the engagement distance before uploading — the image will be scaled and positioned like any other target. Use your own steel photos, manufacturer target diagrams, or printed target images.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="help-card-title" style="font-size:0.58rem; letter-spacing:0.18em; color:var(--accent); margin-bottom:8px;">INTERACTION</div>
+        <table class="help-table">
+          <thead><tr><th>Action</th><th>Result</th></tr></thead>
+          <tbody>
+            <tr><td>Drag target</td><td>Freely reposition any target on the scene. Horizontal movement is unrestricted. Vertical movement is clamped — targets cannot be dragged into the sky zone. Works with touch on mobile.</td></tr>
+            <tr><td>Click target once</td><td>Selects the target (dashed outline). Useful for visually identifying a specific target before removing it.</td></tr>
+            <tr><td>Click selected target</td><td>Prompts to remove the target from the scene.</td></tr>
+            <tr><td>Click scene background</td><td>Deselects all targets.</td></tr>
+            <tr><td>✕ Clear All</td><td>Removes all targets from the scene instantly. Cannot be undone.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- COMBINING BUILDER AND DRY FIRE -->
+      <div class="help-section">
+        <div class="help-section-title"><span>◆</span> Using Builder + Dry Fire Together</div>
+        <p class="help-p">Builder and Dry Fire are designed to be used in sequence. The recommended workflow for a training session or match prep is:</p>
+        <div class="help-card" style="margin-bottom:10px;">
+          <div class="help-card-title">Recommended Workflow</div>
+          <p style="line-height:2; font-size:0.68rem; color:var(--text-dim);">
+            <span style="color:var(--accent-bright);">1.</span> Open <strong>Builder</strong> — set your range parameters, discipline, focus, and round mode.<br>
+            <span style="color:var(--accent-bright);">2.</span> Hit <strong>▶ GENERATE</strong> to produce a stage or full match card.<br>
+            <span style="color:var(--accent-bright);">3.</span> Review the stage card — note target count, distances, sizes, and course of fire.<br>
+            <span style="color:var(--accent-bright);">4.</span> Switch to <strong>Dry Fire</strong> using the header tab.<br>
+            <span style="color:var(--accent-bright);">5.</span> Click <strong>⊕ Import Last Stage</strong> — targets appear on the hillside at correct distances and sizes.<br>
+            <span style="color:var(--accent-bright);">6.</span> Drag targets to match your actual range layout or steel positions.<br>
+            <span style="color:var(--accent-bright);">7.</span> Practice transitions and position changes against the scaled scene before going live.
+          </p>
+        </div>
+        <p class="help-p">If your range has fixed steel, use <strong>Custom Targets</strong> in the Builder to lock specific distances and sizes, generate the stage, then import — the scene will reflect your actual range setup with accurate scaling.</p>
+        <p class="help-p">For NRL Hunter, importing a stage populates the scene with the correct animal silhouettes at their assigned distances. Use this to visualize sight picture and holdover before a field match.</p>
+      </div>
+
+    </div><!-- /modal-body -->
+
+    <div class="modal-footer">
+      <div class="modal-footer-text">PRS Stage &amp; Match Builder // <strong>BUILD v1.3.1</strong></div>
+      <div class="modal-footer-text">Author: <strong>Charles Witherspoon</strong> &nbsp;<a href="https://instagram.com/dubs_does" target="_blank" rel="noopener" style="color:var(--text-dim); text-decoration:none; font-size:0.6rem; letter-spacing:0.1em; transition:color 0.2s;" onmouseover="this.style.color='var(--accent-bright)'" onmouseout="this.style.color='var(--text-dim)'">&#9653; @dubs_does</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ HEADER ═══════════════════ -->
+<header>
+  <div class="header-inner">
+    <div class="reticle">
+      <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="24" cy="24" r="22" stroke="#c8922a" stroke-width="1"/>
+        <circle cx="24" cy="24" r="12" stroke="#c8922a" stroke-width="0.75" stroke-dasharray="3 3"/>
+        <circle cx="24" cy="24" r="3" stroke="#e8a832" stroke-width="1.5"/>
+        <line x1="24" y1="0" x2="24" y2="16" stroke="#c8922a" stroke-width="1"/>
+        <line x1="24" y1="32" x2="24" y2="48" stroke="#c8922a" stroke-width="1"/>
+        <line x1="0" y1="24" x2="16" y2="24" stroke="#c8922a" stroke-width="1"/>
+        <line x1="32" y1="24" x2="48" y2="24" stroke="#c8922a" stroke-width="1"/>
+        <line x1="20" y1="4" x2="22" y2="4" stroke="#c8922a" stroke-width="0.75"/>
+        <line x1="26" y1="4" x2="28" y2="4" stroke="#c8922a" stroke-width="0.75"/>
+        <line x1="20" y1="44" x2="22" y2="44" stroke="#c8922a" stroke-width="0.75"/>
+        <line x1="26" y1="44" x2="28" y2="44" stroke="#c8922a" stroke-width="0.75"/>
+      </svg>
+    </div>
+    <div class="header-text">
+      <h1>PRS Stage Builder</h1>
+      <p>PRS &amp; NRL HUNTER // MATCH &amp; STAGE GENERATOR</p>
+    </div>
+    <div class="view-tabs">
+      <button class="view-tab active" onclick="switchView('builder')" id="tabBuilder">◈ BUILDER</button>
+      <button class="view-tab" onclick="switchView('dryfire')" id="tabDryFire">◎ DRY FIRE</button>
+    </div>
+    <div class="header-right">
+      <div class="header-right-top">
+        <div class="theme-switcher">
+          <div class="theme-switcher-label">THEME</div>
+          <div class="theme-btns">
+            <button class="theme-btn active" data-theme="amber" onclick="setTheme('amber')" title="Amber Tactical">
+              <span class="theme-swatch" style="background:#e8a832"></span>
+              <span>AMBER</span>
+            </button>
+            <button class="theme-btn" data-theme="nvg" onclick="setTheme('nvg')" title="Night Vision Green">
+              <span class="theme-swatch" style="background:#39ff39"></span>
+              <span>NVG</span>
+            </button>
+            <button class="theme-btn" data-theme="day" onclick="setTheme('day')" title="Daytime">
+              <span class="theme-swatch" style="background:#ffffff; border:1px solid #aaa"></span>
+              <span>DAY</span>
+            </button>
+          </div>
+        </div>
+        <button class="help-btn" onclick="openHelp()">? HELP &amp; DOCS</button>
+      </div>
+      <div class="header-status">
+        <div><span class="status-dot"></span>SYSTEM READY</div>
+        <div>BUILD v1.3.1</div>
+        <div style="font-size:0.58rem; margin-top:1px;">C. WITHERSPOON</div>
+        <div style="font-size:0.55rem; margin-top:2px;"><a href="https://instagram.com/dubs_does" target="_blank" rel="noopener" style="color:var(--text-dim); text-decoration:none; letter-spacing:0.1em; transition:color 0.2s;" onmouseover="this.style.color='var(--accent-bright)'" onmouseout="this.style.color='var(--text-dim)'">&#9653; @dubs_does</a></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ═══════════════════ BUILDER VIEW ═══════════════════ -->
+<div id="builderView" class="app-view active">
+<div class="main-grid">
+
+  <!-- ── SIDEBAR ── -->
+  <aside class="sidebar">
+
+    <!-- MODE -->
+    <div class="panel">
+      <div class="panel-label">Mode Select</div>
+      <div class="mode-tabs">
+        <label><input type="radio" name="mode" value="single" checked onchange="updateMode()"><span>Single Stage</span></label>
+        <label><input type="radio" name="mode" value="match" onchange="updateMode()"><span>Match Mode</span></label>
+      </div>
+      <div style="margin-top:8px; padding-top:8px; border-top:1px solid var(--border);">
+        <div class="panel-label" style="margin-bottom:8px;">Discipline</div>
+        <div class="mode-tabs">
+          <label><input type="radio" name="discipline" value="prs" checked onchange="updateDiscipline()"><span>PRS</span></label>
+          <label><input type="radio" name="discipline" value="nrl" onchange="updateDiscipline()"><span>NRL Hunter</span></label>
+        </div>
+      </div>
+    </div>
+
+    <!-- RANGE -->
+    <div class="panel">
+      <div class="panel-label">Range Parameters</div>
+      <div class="field-row">
+        <label class="field-label">MIN DISTANCE (<span class="dist-unit-label" id="rangeUnitLabel">YD</span>)</label>
+        <input type="number" id="minDist" value="400" min="50" max="2000">
+      </div>
+      <div class="field-row">
+        <label class="field-label">MAX DISTANCE (<span class="dist-unit-label" id="rangeUnitLabel2">YD</span>)</label>
+        <input type="number" id="maxDist" value="800" min="50" max="2000">
+      </div>
+      <div class="field-row" style="margin-top:8px; padding-top:8px; border-top:1px solid var(--border);">
+        <label class="field-label">CUSTOM TARGETS</label>
+        <div class="mode-tabs" style="width:115px;">
+          <label style="font-size:0.65rem;"><input type="radio" name="customDist" value="no" checked onchange="updateCustomDist()"><span>OFF</span></label>
+          <label style="font-size:0.65rem;"><input type="radio" name="customDist" value="yes" onchange="updateCustomDist()"><span>ON</span></label>
+        </div>
+      </div>
+    </div>
+
+    <!-- STAGE CONFIG -->
+    <div class="panel">
+      <div class="panel-label">Stage Configuration</div>
+      <div class="field-row">
+        <label class="field-label">TARGET COUNT</label>
+        <input type="number" id="targetCount" value="4" min="1" max="10" onchange="rebuildDistTable()">
+      </div>
+      <div class="field-row">
+        <label class="field-label">DISTANCE UNIT</label>
+        <select id="distUnit" onchange="updateDistUnit()">
+          <option value="yd">Yards (yd)</option>
+          <option value="m">Meters (m)</option>
+        </select>
+      </div>
+      <div class="field-row">
+        <label class="field-label">FOCUS</label>
+        <select id="focus">
+          <option value="balanced">Balanced</option>
+          <option value="wind">Wind</option>
+          <option value="elevation">Elevation</option>
+          <option value="small">Small Target</option>
+          <option value="combined">Combined</option>
+        </select>
+      </div>
+      <div class="field-row">
+        <label class="field-label">ROUND MODE</label>
+        <select id="roundMode">
+          <option value="full">Full</option>
+          <option value="mid">Mid Compression</option>
+          <option value="low">Low Compression</option>
+        </select>
+      </div>
+      <div class="field-row" id="prsUnitsRow">
+        <label class="field-label">SCOPE UNITS</label>
+        <select id="units" onchange="rebuildDistTable()">
+          <option value="MOA">MOA</option>
+          <option value="MIL">MIL</option>
+        </select>
+      </div>
+      <div class="field-row">
+        <label class="field-label">CUSTOM TIME (SEC)</label>
+        <input type="number" id="customTime" placeholder="auto" min="10" max="600" style="width:115px;">
+      </div>
+    </div>
+
+    <!-- CUSTOM TARGET TABLE -->
+    <div class="panel" id="distPanel" style="display:none;">
+      <div class="panel-header" onclick="toggleDistPanel()">
+        <div class="panel-label" style="margin-bottom:0; flex:1;">Custom Targets (<span id="distPanelUnit">yd</span>)</div>
+        <button class="panel-toggle" id="distPanelToggle">▲ HIDE</button>
+      </div>
+      <div class="panel-collapsible" id="distPanelBody" style="margin-top:11px;">
+        <table class="dist-input-table" id="customTargetTable">
+          <thead>
+            <tr>
+              <th>TGT</th>
+              <th>DIST (<span id="distTableUnit">YD</span>)</th>
+              <th id="sizeColHeader">SIZE</th>
+              <th style="text-align:center;width:34px;">USE</th>
+            </tr>
+          </thead>
+          <tbody id="distTableBody"></tbody>
+        </table>
+        <div class="dist-note" id="customTableNote">Toggle ✓ to lock a target's distance and/or animal/size. Leave as AUTO to let the generator choose. Unlocked distance slots use random values within range parameters.</div>
+      </div>
+    </div>
+
+    <!-- EQUIPMENT -->
+    <div class="panel">
+      <div class="panel-label">Equipment</div>
+      <div class="checkbox-grid">
+        <label class="cb-label"><input type="checkbox" value="Barricade" checked><span class="cb-box"></span>Barricade</label>
+        <label class="cb-label"><input type="checkbox" value="Tripod"><span class="cb-box"></span>Tripod</label>
+        <label class="cb-label"><input type="checkbox" value="Tank Trap"><span class="cb-box"></span>Tank Trap</label>
+        <label class="cb-label"><input type="checkbox" value="Rooftop"><span class="cb-box"></span>Rooftop</label>
+        <label class="cb-label"><input type="checkbox" value="Prone"><span class="cb-box"></span>Prone</label>
+        <label class="cb-label"><input type="checkbox" value="Modified Prone"><span class="cb-box"></span>Mod. Prone</label>
+      </div>
+    </div>
+
+    <!-- MATCH SETTINGS -->
+    <div class="panel" id="matchPanel">
+      <div class="panel-label">Match Settings</div>
+      <div class="field-row">
+        <label class="field-label">STAGE COUNT</label>
+        <input type="number" id="stageCount" value="8" min="1" max="20">
+      </div>
+      <div class="field-row">
+        <label class="field-label">DIFFICULTY</label>
+        <select id="difficulty">
+          <option value="club">Club</option>
+          <option value="regional">Regional</option>
+          <option value="national">National</option>
+        </select>
+      </div>
+    </div>
+
+    <button class="gen-btn" onclick="generate()">▶ GENERATE</button>
+
+  </aside>
+
+  <!-- ── OUTPUT ── -->
+  <main class="output-area">
+    <div class="output-toolbar" id="outputToolbar" style="display:none;">
+      <span class="output-toolbar-label">▶ STAGE OUTPUT</span>
+      <div class="output-toolbar-actions">
+        <button class="output-action-btn" onclick="printStages()" title="Print / Save as PDF">
+          ⎙ PRINT / PDF
+        </button>
+        <button class="output-action-btn danger" onclick="clearOutput()" title="Clear output">
+          ✕ CLEAR
+        </button>
+      </div>
+    </div>
+    <div class="empty-state" id="emptyState">
+      <div class="empty-reticle"></div>
+      <div>AWAITING STAGE GENERATION</div>
+    </div>
+    <div id="output"></div>
+  </main>
+
+</div><!-- /main-grid -->
+</div><!-- /builderView -->
+
+<!-- ═══════════════════ DRY FIRE VIEW ═══════════════════ -->
+<div id="dryFireView">
+
+  <!-- ── DRY FIRE SIDEBAR ── -->
+  <div class="df-sidebar">
+
+    <div class="panel">
+      <div class="panel-label">Scene Setup</div>
+      <div class="field-row">
+        <label class="field-label">MIN DIST (<span id="dfMinLabel">YD</span>)</label>
+        <input type="number" id="dfMin" value="100" min="25" max="2000" style="width:90px;">
+      </div>
+      <div class="field-row">
+        <label class="field-label">MAX DIST (<span id="dfMaxLabel">YD</span>)</label>
+        <input type="number" id="dfMax" value="600" min="25" max="2000" style="width:90px;">
+      </div>
+      <div class="field-row" style="margin-top:6px;">
+        <label class="field-label">UNIT</label>
+        <select id="dfUnit" onchange="updateDfUnit()" style="width:90px;">
+          <option value="yd">Yards</option>
+          <option value="m">Meters</option>
+        </select>
+      </div>
+      <div class="field-row" style="margin-top:6px; padding-top:6px; border-top:1px solid var(--border);">
+        <label class="field-label">SHOW SKY ZONE</label>
+        <div class="mode-tabs" style="width:90px;">
+          <label style="font-size:0.6rem;"><input type="radio" name="dfSkyZone" value="no" checked onchange="toggleSkyZone()"><span>OFF</span></label>
+          <label style="font-size:0.6rem;"><input type="radio" name="dfSkyZone" value="yes" onchange="toggleSkyZone()"><span>ON</span></label>
+        </div>
+      </div>
+      <div class="field-row">
+        <label class="field-label">DIST BANDS</label>
+        <div class="mode-tabs" style="width:90px;">
+          <label style="font-size:0.6rem;"><input type="radio" name="dfBands" value="no" checked onchange="toggleBands()"><span>OFF</span></label>
+          <label style="font-size:0.6rem;"><input type="radio" name="dfBands" value="yes" onchange="toggleBands()"><span>ON</span></label>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-label">Add Targets</div>
+
+      <!-- Generate from stage -->
+      <div style="margin-bottom:10px;">
+        <div class="field-label" style="margin-bottom:6px; color:var(--text);">FROM STAGE</div>
+        <button class="gen-btn" style="font-size:0.7rem; padding:8px; margin-top:0;" onclick="importFromStage()">⊕ IMPORT LAST STAGE</button>
+      </div>
+
+      <!-- Generate example targets -->
+      <div style="margin-bottom:10px; padding-top:8px; border-top:1px solid var(--border);">
+        <div class="field-label" style="margin-bottom:6px; color:var(--text);">EXAMPLE TARGETS</div>
+        <div class="field-row">
+          <label class="field-label">COUNT</label>
+          <input type="number" id="dfExCount" value="4" min="1" max="12" style="width:70px;">
+        </div>
+        <div class="field-row">
+          <label class="field-label">TYPE</label>
+          <select id="dfExType" style="width:100px; font-size:0.7rem;">
+            <option value="circle">Circle</option>
+            <option value="square">Square</option>
+            <option value="ipsc">IPSC</option>
+            <option value="mixed">Mixed</option>
+          </select>
+        </div>
+        <div class="field-row">
+          <label class="field-label">SIZE (MOA)</label>
+          <select id="dfExMoa" style="width:100px; font-size:0.7rem;">
+            <option value="0.5">0.5 MOA</option>
+            <option value="1">1 MOA</option>
+            <option value="2" selected>2 MOA</option>
+            <option value="3">3 MOA</option>
+            <option value="4">4 MOA</option>
+          </select>
+        </div>
+        <button class="gen-btn" style="font-size:0.7rem; padding:8px; margin-top:6px;" onclick="generateExampleTargets()">⊕ GENERATE EXAMPLES</button>
+      </div>
+
+      <!-- Custom target upload -->
+      <div style="padding-top:8px; border-top:1px solid var(--border);">
+        <div class="field-label" style="margin-bottom:6px; color:var(--text);">CUSTOM IMAGE TARGET</div>
+        <div class="field-row">
+          <label class="field-label">DIST (<span id="dfCustomDistLabel">YD</span>)</label>
+          <input type="number" id="dfCustomDist" value="300" min="25" max="2000" style="width:90px;">
+        </div>
+        <button class="gen-btn" style="font-size:0.7rem; padding:8px; margin-top:4px;" onclick="document.getElementById('dfCustomUpload').click()">⊕ UPLOAD TARGET IMAGE</button>
+        <input type="file" id="dfCustomUpload" accept="image/*" onchange="addCustomTarget(event)">
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-label">Instructions</div>
+      <div style="font-size:0.62rem; color:var(--text-dim); line-height:1.7;">
+        <div>◆ Drag targets to reposition</div>
+        <div>◆ Closer targets sit lower (nearer ground)</div>
+        <div>◆ Targets sized by distance &amp; MOA</div>
+        <div>◆ Targets cannot be placed in sky</div>
+        <div>◆ Click target to select &amp; delete</div>
+      </div>
+    </div>
+
+  </div><!-- /df-sidebar -->
+
+  <!-- ── DRY FIRE CANVAS ── -->
+  <div class="df-canvas-wrap" id="dfCanvasWrap">
+    <div id="dfScene">
+      <div class="df-sky-zone" id="dfSkyZone"></div>
+      <!-- Distance band rulers injected here -->
+      <div id="dfRulers"></div>
+      <!-- Targets injected here -->
+      <div id="dfTargets"></div>
+      <div class="df-empty-hint" id="dfHint">
+        <div style="font-size:2rem; opacity:0.4;">◎</div>
+        <div>GENERATE OR IMPORT TARGETS</div>
+        <div style="font-size:0.58rem; opacity:0.6;">Drag targets to adjust position</div>
+      </div>
+    </div>
+
+    <!-- Floating toolbar -->
+    <div class="df-toolbar">
+      <button class="df-tool-btn" onclick="importFromStage()">⊕ IMPORT</button>
+      <button class="df-tool-btn" onclick="generateExampleTargets()">◈ EXAMPLES</button>
+      <button class="df-tool-btn" onclick="document.getElementById('dfCustomUpload').click()">↑ UPLOAD</button>
+      <button class="df-tool-btn danger" onclick="clearDfTargets()">✕ CLEAR ALL</button>
+    </div>
+  </div><!-- /df-canvas-wrap -->
+
+</div><!-- /dryFireView -->
+
+<!-- ═══════════════════ SCRIPT ═══════════════════ -->
+</body>
+<!-- JavaScript Modules (load order matters) -->
+<script src="js/data.js"></script>
+<script src="js/theme.js"></script>
+<script src="js/units.js"></script>
+<script src="js/targets.js"></script>
+<script src="js/stage.js"></script>
+<script src="js/render.js"></script>
+<script src="js/generate.js"></script>
+<script src="js/device.js"></script>
+<script src="js/dryfire.js"></script>
+<script src="js/print.js"></script>
+<script src="js/init.js"></script>
+</html>

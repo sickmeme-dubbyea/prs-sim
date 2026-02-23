@@ -1,0 +1,89 @@
+/* ── PRINT / PDF EXPORT ── */
+  @media print {
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+
+    body {
+      background: #fff !important;
+      color: #000 !important;
+      overflow: visible !important;
+      height: auto !important;
+    }
+
+    header,
+    .sidebar,
+    .output-toolbar,
+    #dryFireView,
+    .modal-overlay,
+    #emptyState,
+    .view-tabs,
+    body::before { display: none !important; }
+
+    .main-grid {
+      display: block !important;
+      height: auto !important;
+      overflow: visible !important;
+    }
+
+    .output-area {
+      overflow: visible !important;
+      height: auto !important;
+      padding: 0 !important;
+    }
+
+    #builderView { display: block !important; }
+
+    .stage-card {
+      background: #fff !important;
+      border: 1px solid #aaa !important;
+      break-inside: avoid;
+      page-break-inside: avoid;
+      margin-bottom: 16px !important;
+      animation: none !important;
+      opacity: 1 !important;
+      box-shadow: none !important;
+    }
+
+    .stage-header { background: #f2f2f2 !important; border-bottom: 1px solid #ccc !important; }
+    .stage-num { color: #000 !important; font-size: 1rem !important; }
+    .meta-item { color: #333 !important; }
+    .meta-item span { color: #000 !important; }
+    .stage-body { background: #fff !important; }
+    .target-table th { color: #555 !important; border-bottom: 1px solid #ccc !important; }
+    .target-table td { color: #000 !important; border-bottom: 1px solid #eee !important; }
+    .cof-section { border-left: 1px solid #ccc !important; }
+    .cof-label { color: #333 !important; }
+    .position-name { color: #000 !important; }
+    .shot-chip {
+      background: #eee !important;
+      border: 1px solid #ccc !important;
+      color: #000 !important;
+      box-shadow: none !important;
+    }
+    .shot-arrow { color: #666 !important; }
+
+    .print-header {
+      display: block !important;
+      padding: 8px 0 12px;
+      border-bottom: 2px solid #000;
+      margin-bottom: 16px;
+    }
+
+    .print-header h2 {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 1rem;
+      margin: 0 0 3px;
+      letter-spacing: 0.08em;
+    }
+
+    .print-header p {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.65rem;
+      color: #555;
+      margin: 0;
+      letter-spacing: 0.06em;
+    }
+
+    @page { margin: 16mm 14mm; }
+  }
+
+  .print-header { display: none; }
