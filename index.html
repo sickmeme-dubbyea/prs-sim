@@ -867,7 +867,7 @@
       <!-- OVERVIEW -->
       <div class="help-section">
         <div class="help-section-title"><span>◆</span> Overview</div>
-        <p class="help-p">The PRS Stage &amp; Match Builder generates randomized Precision Rifle Series stage and match plans based on your range setup, equipment availability, and difficulty preferences. Use it to design training scenarios, club stages, or full match cards with realistic engagement sequences, positional splits, and time constraints.</p>
+        <p class="help-p">The PRS &amp; NRL Hunter Stage Builder generates randomized stage and match plans for both Precision Rifle Series (PRS) and NRL Hunter competitions. Configure your range setup, equipment, discipline, and difficulty to produce realistic engagement sequences, positional splits, and time constraints — whether you're running steel plates or hunting-style animal silhouettes.</p>
       </div>
 
       <!-- MODES -->
@@ -881,6 +881,26 @@
           <div class="help-card">
             <div class="help-card-title">Match Mode</div>
             <p>Generates a full multi-stage match card. Set the number of stages and overall difficulty level in the Match Settings panel. Each stage is independently randomized using the same global range parameters and equipment pool, ensuring variety across the card.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- DISCIPLINE -->
+      <div class="help-section">
+        <div class="help-section-title"><span>◆</span> Discipline</div>
+        <div class="help-grid">
+          <div class="help-card">
+            <div class="help-card-title">PRS — Precision Rifle Series</div>
+            <p>Generates stages using angular plate sizes in <strong>MOA</strong> or <strong>MIL</strong>. Scope Units selector is active. Focus logic controls plate size selection from the defined MOA/MIL pools. Custom Targets size dropdown shows numeric plate sizes.</p>
+          </div>
+          <div class="help-card">
+            <div class="help-card-title">NRL Hunter</div>
+            <p>Generates stages using animal silhouettes drawn from the full NRL Hunter target catalog, organized into three difficulty tiers. Scope Units selector is hidden. Focus logic maps to tiers — <strong>Small</strong> draws only Tier 1; <strong>Wind</strong> draws Tier 1–2; <strong>Elevation</strong> draws Tier 2–3; <strong>Balanced/Combined</strong> draw from all tiers. Custom Targets dropdown shows animals grouped by size tier.</p>
+            <p style="margin-top:6px; font-size:0.64rem; color:var(--text-dim); line-height:1.5;">
+              <strong style="color:var(--text);">Tier 1 — Small:</strong> Prairie Dog, Crow, Chicken, Rabbit, Squirrel<br>
+              <strong style="color:var(--text);">Tier 2 — Medium:</strong> Fox, Coyote, Turkey, Pig, Javelina, Otter, Bobcat<br>
+              <strong style="color:var(--text);">Tier 3 — Large:</strong> Ram, Deer, Wolf, Cougar, Bear, Elk
+            </p>
           </div>
         </div>
       </div>
@@ -941,8 +961,12 @@
               <td>4–6 rounds, 45–60 seconds, 1 position. Fast and decisive. Favors cold-bore first-round hit capability and rapid target acquisition. Ideal for speed drills.</td>
             </tr>
             <tr>
-              <td>Units</td>
-              <td>Display plate sizes in <strong>MOA</strong> (Minutes of Angle) or <strong>MIL</strong> (Milliradians) to match your scope's reticle and turret system.</td>
+              <td>Scope Units</td>
+              <td>Display plate sizes in <strong>MOA</strong> (Minutes of Angle) or <strong>MIL</strong> (Milliradians) to match your scope's reticle and turret system. Hidden in NRL Hunter mode.</td>
+            </tr>
+            <tr>
+              <td>Custom Time (sec)</td>
+              <td>Override the automatically calculated time limit with a specific value in seconds. Leave blank to use the default time for the selected Round Mode (105 sec for Full, 75–90 for Mid, 45–60 for Low). Useful for field matches, club events, or training sessions with fixed time windows.</td>
             </tr>
           </tbody>
         </table>
@@ -998,7 +1022,7 @@
             <tr><td>Total Rds</td><td>Total rounds to be fired in the stage, distributed across all targets.</td></tr>
             <tr><td>Positions</td><td>Number of distinct prop or position changes required within the stage.</td></tr>
             <tr><td>Dist</td><td>Target engagement distance displayed in your chosen unit (yards or meters). If a distance was locked in the Target Distance Table, that exact value is used. All distances are converted to yards internally for ballistic calculations.</td></tr>
-            <tr><td>Size</td><td>Target plate angular size in MOA or MIL. Smaller values are harder at any given distance.</td></tr>
+            <tr><td>Size / Animal</td><td>In PRS mode: target plate angular size in MOA or MIL — smaller values are harder at any given distance. In NRL Hunter mode: the animal silhouette (Chicken, Pig, Turkey, Ram) — Chicken is the smallest and hardest, Ram is the largest.</td></tr>
             <tr><td>Rds</td><td>Total rounds allocated to that specific target across all positions in the stage.</td></tr>
             <tr><td>Course of Fire</td><td>Per-position engagement sequence. Arrows (›) indicate shot order. The sequence is randomized to avoid consecutive shots on the same target where possible.</td></tr>
           </tbody>
@@ -1034,7 +1058,7 @@
     </div>
     <div class="header-text">
       <h1>PRS Stage Builder</h1>
-      <p>PRECISION RIFLE SERIES // MATCH &amp; STAGE GENERATOR</p>
+      <p>PRS &amp; NRL HUNTER // MATCH &amp; STAGE GENERATOR</p>
     </div>
     <div class="header-right">
       <div class="theme-switcher">
@@ -1077,6 +1101,13 @@
       <div class="mode-tabs">
         <label><input type="radio" name="mode" value="single" checked onchange="updateMode()"><span>Single Stage</span></label>
         <label><input type="radio" name="mode" value="match" onchange="updateMode()"><span>Match Mode</span></label>
+      </div>
+      <div style="margin-top:8px; padding-top:8px; border-top:1px solid var(--border);">
+        <div class="panel-label" style="margin-bottom:8px;">Discipline</div>
+        <div class="mode-tabs">
+          <label><input type="radio" name="discipline" value="prs" checked onchange="updateDiscipline()"><span>PRS</span></label>
+          <label><input type="radio" name="discipline" value="nrl" onchange="updateDiscipline()"><span>NRL Hunter</span></label>
+        </div>
       </div>
     </div>
 
@@ -1132,12 +1163,16 @@
           <option value="low">Low Compression</option>
         </select>
       </div>
-      <div class="field-row">
-        <label class="field-label">UNITS</label>
-        <select id="units">
+      <div class="field-row" id="prsUnitsRow">
+        <label class="field-label">SCOPE UNITS</label>
+        <select id="units" onchange="rebuildDistTable()">
           <option value="MOA">MOA</option>
           <option value="MIL">MIL</option>
         </select>
+      </div>
+      <div class="field-row">
+        <label class="field-label">CUSTOM TIME (SEC)</label>
+        <input type="number" id="customTime" placeholder="auto" min="10" max="600" style="width:115px;">
       </div>
     </div>
 
@@ -1153,13 +1188,13 @@
             <tr>
               <th>TGT</th>
               <th>DIST (<span id="distTableUnit">YD</span>)</th>
-              <th>SIZE</th>
+              <th id="sizeColHeader">SIZE</th>
               <th style="text-align:center;width:34px;">USE</th>
             </tr>
           </thead>
           <tbody id="distTableBody"></tbody>
         </table>
-        <div class="dist-note">Toggle ✓ to lock a target's distance and/or size. Leave size as AUTO to let focus logic choose. Unlocked distance slots use random values within range parameters.</div>
+        <div class="dist-note" id="customTableNote">Toggle ✓ to lock a target's distance and/or animal/size. Leave as AUTO to let the generator choose. Unlocked distance slots use random values within range parameters.</div>
       </div>
     </div>
 
@@ -1211,6 +1246,55 @@
 <!-- ═══════════════════ SCRIPT ═══════════════════ -->
 <script>
   const MOA_OPTIONS = [0.5, 1, 1.5, 2, 3, 4];
+  const MIL_OPTIONS_CONST = [0.2, 0.3, 0.5, 0.7, 1.0, 1.2];
+
+  // NRL Hunter animal silhouettes organized by difficulty tier (smallest/hardest → largest/easiest)
+  // Tier 1 = smallest/hardest, Tier 3 = largest/easiest
+  const NRL_ANIMALS = [
+    // Tier 1 — Small / Hardest
+    { name: 'Prairie Dog', label: 'Prairie Dog', tier: 1 },
+    { name: 'Crow',        label: 'Crow',        tier: 1 },
+    { name: 'Chicken',     label: 'Chicken',     tier: 1 },
+    { name: 'Rabbit',      label: 'Rabbit',      tier: 1 },
+    { name: 'Squirrel',    label: 'Squirrel',    tier: 1 },
+    // Tier 2 — Medium
+    { name: 'Fox',         label: 'Fox',         tier: 2 },
+    { name: 'Coyote',      label: 'Coyote',      tier: 2 },
+    { name: 'Turkey',      label: 'Turkey',      tier: 2 },
+    { name: 'Pig',         label: 'Pig',         tier: 2 },
+    { name: 'Javelina',    label: 'Javelina',    tier: 2 },
+    { name: 'Otter',       label: 'Otter',       tier: 2 },
+    { name: 'Bobcat',      label: 'Bobcat',      tier: 2 },
+    // Tier 3 — Large / Easiest
+    { name: 'Ram',         label: 'Ram',         tier: 3 },
+    { name: 'Deer',        label: 'Deer',        tier: 3 },
+    { name: 'Wolf',        label: 'Wolf',        tier: 3 },
+    { name: 'Cougar',      label: 'Cougar',      tier: 3 },
+    { name: 'Bear',        label: 'Bear',        tier: 3 },
+    { name: 'Elk',         label: 'Elk',         tier: 3 },
+  ];
+
+  // Helper: get animals by tier(s)
+  function animalsByTier(...tiers) {
+    return NRL_ANIMALS.filter(a => tiers.includes(a.tier)).map(a => a.name);
+  }
+
+  function getDiscipline() {
+    const el = document.querySelector('input[name="discipline"]:checked');
+    return el ? el.value : 'prs';
+  }
+
+  function updateDiscipline() {
+    const isNRL = getDiscipline() === 'nrl';
+    // Hide/show scope units row (not needed for NRL animal targets)
+    const unitsRow = document.getElementById('prsUnitsRow');
+    if (unitsRow) unitsRow.style.display = isNRL ? 'none' : '';
+    // Update size column header
+    const hdr = document.getElementById('sizeColHeader');
+    if (hdr) hdr.textContent = isNRL ? 'ANIMAL' : 'SIZE';
+    // Rebuild table so dropdowns reflect discipline
+    rebuildDistTable();
+  }
 
   /* ── theme ── */
   function setTheme(theme) {
@@ -1321,17 +1405,28 @@
   }
 
   function getSizeOptions(units) {
-    const opts = units === 'MOA' ? MOA_OPTIONS : MIL_OPTIONS;
-    return opts;
+    return units === 'MOA' ? MOA_OPTIONS : MIL_OPTIONS;
   }
 
   function buildSizeSelect(units, selectedVal) {
-    const opts = getSizeOptions(units);
-    let html = `<select onchange="">`;
+    const isNRL = getDiscipline() === 'nrl';
+    let html = `<select>`;
     html += `<option value="auto"${selectedVal === 'auto' ? ' selected' : ''}>AUTO</option>`;
-    opts.forEach(o => {
-      html += `<option value="${o}"${String(selectedVal) === String(o) ? ' selected' : ''}>${o} ${units}</option>`;
-    });
+    if (isNRL) {
+      const tierLabels = { 1: 'Small', 2: 'Medium', 3: 'Large' };
+      let lastTier = null;
+      NRL_ANIMALS.forEach(a => {
+        if (a.tier !== lastTier) {
+          html += `<optgroup label="── ${tierLabels[a.tier]} ──">`;
+          lastTier = a.tier;
+        }
+        html += `<option value="${a.name}"${selectedVal === a.name ? ' selected' : ''}>${a.label}</option>`;
+      });
+    } else {
+      getSizeOptions(units).forEach(o => {
+        html += `<option value="${o}"${String(selectedVal) === String(o) ? ' selected' : ''}>${o} ${units}</option>`;
+      });
+    }
     html += `</select>`;
     return html;
   }
@@ -1404,6 +1499,20 @@
   }
 
   function pickPlate(focus, units) {
+    if (getDiscipline() === 'nrl') {
+      // NRL Hunter: focus maps to animal difficulty tiers
+      // small   = Tier 1 only (smallest/hardest)
+      // wind    = Tier 1 + 2 (small to medium)
+      // elevation = Tier 2 + 3 (medium to large — varied vertical angles suit larger steel)
+      // balanced  = all tiers
+      // combined  = all tiers (max variety)
+      let pool;
+      if (focus === 'small')          pool = animalsByTier(1);
+      else if (focus === 'wind')      pool = animalsByTier(1, 2);
+      else if (focus === 'elevation') pool = animalsByTier(2, 3);
+      else                            pool = animalsByTier(1, 2, 3);
+      return pool[randInt(0, pool.length)];
+    }
     const options = units === 'MOA' ? MOA_OPTIONS : MIL_OPTIONS;
     let pool = [...options];
     if (focus === 'small')     pool = options.slice(0, 2);
@@ -1413,9 +1522,11 @@
   }
 
   function getRoundProfile(mode) {
-    if (mode === 'full') return { rounds: randInt(10, 13), time: 105 };
-    if (mode === 'mid')  return { rounds: randInt(6, 9),  time: randInt(75, 91) };
-    return                      { rounds: randInt(4, 7),  time: randInt(45, 61) };
+    const customTime = parseInt(document.getElementById('customTime').value);
+    const hasCustom  = !isNaN(customTime) && customTime >= 10;
+    if (mode === 'full') return { rounds: randInt(10, 13), time: hasCustom ? customTime : 105 };
+    if (mode === 'mid')  return { rounds: randInt(6, 9),   time: hasCustom ? customTime : randInt(75, 91) };
+    return                      { rounds: randInt(4, 7),   time: hasCustom ? customTime : randInt(45, 61) };
   }
 
   function allocateRounds(targets, total) {
@@ -1452,12 +1563,13 @@
   }
 
   function buildStage(globalMin, globalMax) {
-    const targetCount = parseInt(document.getElementById('targetCount').value);
-    const focus       = document.getElementById('focus').value;
-    const roundMode   = document.getElementById('roundMode').value;
-    const units       = document.getElementById('units').value;
-    const distUnit    = getDistUnit();
-    let equipment     = Array.from(document.querySelectorAll('input[type=checkbox]:checked')).map(e => e.value);
+    const targetCount  = parseInt(document.getElementById('targetCount').value);
+    const focus        = document.getElementById('focus').value;
+    const roundMode    = document.getElementById('roundMode').value;
+    const units        = document.getElementById('units').value;
+    const distUnit     = getDistUnit();
+    const discipline   = getDiscipline();
+    let equipment      = Array.from(document.querySelectorAll('input[type=checkbox]:checked')).map(e => e.value);
     if (!equipment.length) equipment = ['Barricade', 'Prone'];
 
     // Build locked target array padded to targetCount
@@ -1467,9 +1579,10 @@
     const lockedDists = lockedTargets.map(t => t.dist);
 
     // generateDistances returns yards; convert for display
-    const distancesYd = generateDistances(globalMin, globalMax, targetCount, lockedDists);
+    const distancesYd      = generateDistances(globalMin, globalMax, targetCount, lockedDists);
     const distancesDisplay = distancesYd.map(d => distUnit === 'm' ? Math.round(d * YD_TO_M) : d);
 
+    // For NRL, size is animal name; for PRS, size is numeric MOA/MIL value
     let targets = distancesDisplay.map((d, i) => ({
       id: 'T' + (i + 1),
       distance: d,
@@ -1485,7 +1598,10 @@
     const positions = shuffle(equipment).slice(0, Math.min(posCount, equipment.length));
     const split     = splitAcrossPositions(engagementOrder, positions);
 
-    return { targets: allocated, split, positions, totalRounds: roundProfile.rounds, time: roundProfile.time, units, distUnit };
+    // Display label for size column header
+    const sizeLabel = discipline === 'nrl' ? 'ANIMAL' : units;
+
+    return { targets: allocated, split, positions, totalRounds: roundProfile.rounds, time: roundProfile.time, units, distUnit, discipline, sizeLabel };
   }
 
   /* ── render ── */
@@ -1505,9 +1621,13 @@
     </div>`;
 
     h += `<div class="stage-body"><div>`;
-    h += `<table class="target-table"><thead><tr><th>TGT</th><th>DIST</th><th>SIZE</th><th>RDS</th></tr></thead><tbody>`;
+    const sizeHdr = stage.discipline === 'nrl' ? 'ANIMAL' : 'SIZE';
+    h += `<table class="target-table"><thead><tr><th>TGT</th><th>DIST</th><th>${sizeHdr}</th><th>RDS</th></tr></thead><tbody>`;
     stage.targets.forEach(t => {
-      h += `<tr><td>${t.id}</td><td>${t.distance}${stage.distUnit}</td><td>${t.size} ${stage.units}</td><td>${t.rounds}</td></tr>`;
+      const sizeDisplay = stage.discipline === 'nrl'
+        ? t.size
+        : `${t.size} ${stage.units}`;
+      h += `<tr><td>${t.id}</td><td>${t.distance}${stage.distUnit}</td><td>${sizeDisplay}</td><td>${t.rounds}</td></tr>`;
     });
     h += `</tbody></table></div>`;
 
@@ -1549,6 +1669,7 @@
 
   /* ── init ── */
   updateMode();
+  updateDiscipline();
   updateCustomDist();
   rebuildDistTable();
   // Restore saved theme
