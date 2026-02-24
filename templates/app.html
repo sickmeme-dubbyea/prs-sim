@@ -1,0 +1,3406 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="amber">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<title>PRS Stage &amp; Match Builder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+
+  /* ══ THEME: AMBER TACTICAL (default) ══ */
+  :root, [data-theme="amber"] {
+    --bg: #0d0f0c;
+    --surface: #131610;
+    --surface2: #1a1e17;
+    --border: #2e3528;
+    --border-bright: #4a5540;
+    --accent: #c8922a;
+    --accent-bright: #e8a832;
+    --accent-dim: #7a5518;
+    --accent2: #5a7a3a;
+    --accent2-bright: #7aaa4a;
+    --text: #c8cfc0;
+    --text-dim: #6a7560;
+    --text-bright: #e8efe0;
+    --red: #8a3a2a;
+    --red-bright: #c85a3a;
+    --scanline-color: rgba(0,0,0,0.08);
+    --glow: none;
+  }
+
+  /* ══ THEME: NIGHT VISION GREEN ══ */
+  [data-theme="nvg"] {
+    --bg: #010c01;
+    --surface: #020f02;
+    --surface2: #041504;
+    --border: #0a2a0a;
+    --border-bright: #164916;
+    --accent: #00c800;
+    --accent-bright: #39ff39;
+    --accent-dim: #006000;
+    --accent2: #00a000;
+    --accent2-bright: #20e020;
+    --text: #90e890;
+    --text-dim: #2a7a2a;
+    --text-bright: #c8ffc8;
+    --red: #003000;
+    --red-bright: #00b800;
+    --scanline-color: rgba(0,40,0,0.18);
+    --glow: 0 0 8px rgba(0,200,0,0.25);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Share Tech Mono', monospace;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Mobile: let the whole page scroll naturally */
+  body.is-mobile {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Desktop: page itself doesn't scroll — inner panels do */
+  body.is-desktop {
+    overflow: hidden;
+    height: 100vh;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, var(--scanline-color) 2px, var(--scanline-color) 4px);
+    pointer-events: none;
+    z-index: 9000;
+  }
+
+  /* ── NVG GLOW EFFECTS ── */
+  [data-theme="nvg"] header { box-shadow: 0 2px 24px rgba(0,200,0,0.12); }
+  [data-theme="nvg"] .gen-btn { box-shadow: 0 0 14px rgba(0,200,0,0.3); }
+  [data-theme="nvg"] .shot-chip { box-shadow: 0 0 4px rgba(0,200,0,0.2); }
+  [data-theme="nvg"] .stage-card { box-shadow: 0 0 10px rgba(0,100,0,0.2); }
+  [data-theme="nvg"] .status-dot { box-shadow: 0 0 8px rgba(57,255,57,0.9); }
+  [data-theme="nvg"] input[type="number"]:focus,
+  [data-theme="nvg"] select:focus { box-shadow: 0 0 0 2px rgba(0,200,0,0.2), 0 0 10px rgba(0,200,0,0.12); }
+  [data-theme="nvg"] .reticle svg { filter: drop-shadow(0 0 4px rgba(0,255,0,0.55)); }
+  [data-theme="nvg"] .stage-num { text-shadow: 0 0 10px rgba(57,255,57,0.4); }
+
+  /* ══ THEME: DAYTIME ══ */
+  [data-theme="day"] {
+    --bg: #f5f5f3;
+    --surface: #ffffff;
+    --surface2: #ebebea;
+    --border: #d0d0cc;
+    --border-bright: #aaaaaa;
+    --accent: #1a1a1a;
+    --accent-bright: #000000;
+    --accent-dim: #555555;
+    --accent2: #3a3a3a;
+    --accent2-bright: #111111;
+    --text: #1a1a1a;
+    --text-dim: #888888;
+    --text-bright: #000000;
+    --red: #cccccc;
+    --red-bright: #cc2200;
+    --scanline-color: rgba(0,0,0,0.0);
+    --glow: none;
+  }
+
+  /* ── DAYTIME OVERRIDES ── */
+  [data-theme="day"] header { border-bottom-color: #1a1a1a; }
+  [data-theme="day"] header::before { background: linear-gradient(90deg, transparent, #555, transparent); }
+  [data-theme="day"] .sidebar { border-right-color: var(--border); }
+  [data-theme="day"] .gen-btn { background: #1a1a1a; color: #ffffff; }
+  [data-theme="day"] .gen-btn:hover { background: #333333; }
+  [data-theme="day"] .gen-btn:active { background: #555555; }
+  [data-theme="day"] .shot-chip { background: rgba(0,0,0,0.06); border-color: #aaa; color: #111; }
+  [data-theme="day"] .stage-card { border-color: var(--border); }
+  [data-theme="day"] .stage-header { background: #ebebea; }
+  [data-theme="day"] .mode-tabs label:has(input:checked) { background: rgba(0,0,0,0.08); border-color: #888; }
+  [data-theme="day"] .cb-label:has(input:checked) .cb-box { background: #1a1a1a; border-color: #000; }
+  [data-theme="day"] .cb-label:has(input:checked) { border-color: #888; }
+  [data-theme="day"] .dist-toggle.active { background: #1a1a1a; border-color: #000; }
+  [data-theme="day"] .modal { border-top-color: #1a1a1a; }
+  [data-theme="day"] .help-btn { border-color: #aaa; }
+  [data-theme="day"] .help-btn:hover { border-color: #333; color: #111; background: rgba(0,0,0,0.05); }
+  [data-theme="day"] .badge-club { color: #2a7a2a; border-color: #5a9a5a; }
+  [data-theme="day"] .badge-regional { color: #7a5a00; border-color: #aa8800; }
+  [data-theme="day"] .badge-national { color: #cc2200; border-color: #cc2200; }
+  [data-theme="day"] .status-dot { background: #2a7a2a; animation: none; opacity: 1; }
+  [data-theme="day"] .reticle svg { filter: none; }
+  [data-theme="day"] ::-webkit-scrollbar-track { background: #ebebea; }
+  [data-theme="day"] ::-webkit-scrollbar-thumb { background: #c0c0bc; }
+  [data-theme="day"] .meta-item span { color: #1a1a1a; }
+  [data-theme="day"] .position-name { color: #1a1a1a; }
+
+
+  /* ── HEADER ── */
+  header {
+    background: var(--surface);
+    border-bottom: 2px solid var(--accent);
+    position: relative;
+    overflow: hidden;
+    z-index: 100;
+  }
+
+  header::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent-bright), transparent);
+    animation: sweep 4s ease-in-out infinite;
+  }
+
+  @keyframes sweep {
+    0%, 100% { opacity: 0; transform: translateX(-100%); }
+    50%       { opacity: 1; transform: translateX(100%); }
+  }
+
+  .header-inner {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 18px;
+    flex-wrap: nowrap;
+    min-width: 0;
+  }
+
+  .reticle { width: 46px; height: 46px; flex-shrink: 0; }
+  .header-text { min-width: 0; flex-shrink: 1; overflow: hidden; }
+  .reticle svg { width: 100%; height: 100%; animation: reticle-spin 20s linear infinite; }
+  @keyframes reticle-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+  .header-text h1 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 1.9rem;
+    letter-spacing: 0.12em;
+    color: var(--accent-bright);
+    text-transform: uppercase;
+    line-height: 1;
+  }
+
+  .header-text p {
+    font-size: 0.68rem;
+    color: var(--text-dim);
+    letter-spacing: 0.25em;
+    margin-top: 4px;
+  }
+
+  .header-right {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+
+  .help-btn {
+    background: transparent;
+    border: 1px solid var(--border-bright);
+    color: var(--text-dim);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.2em;
+    padding: 7px 14px;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.2s;
+  }
+
+  .help-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent-bright);
+    background: rgba(200,146,42,0.08);
+  }
+
+  .header-status {
+    text-align: right;
+    font-size: 0.63rem;
+    color: var(--text-dim);
+    letter-spacing: 0.15em;
+    line-height: 1.65;
+  }
+
+  .status-dot {
+    display: inline-block;
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--accent2-bright);
+    margin-right: 5px;
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.3; }
+  }
+
+  /* ── LAYOUT ── */
+  .main-grid {
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    height: calc(100vh - 84px);
+    overflow: hidden;
+    align-items: stretch;
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 18px 16px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    /* Fill the grid cell height exactly — overflow-y:auto handles the rest */
+    height: 100%;
+    box-sizing: border-box;
+  }
+
+  .panel {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 14px;
+    transition: border-color 0.2s;
+    flex-shrink: 0;
+  }
+
+  .panel:hover { border-color: var(--border-bright); }
+
+  .panel-label {
+    font-size: 0.58rem;
+    letter-spacing: 0.3em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 11px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .panel-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .field-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 9px;
+    gap: 8px;
+  }
+
+  .field-row:last-child { margin-bottom: 0; }
+
+  label.field-label {
+    font-size: 0.68rem;
+    color: var(--text-dim);
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+  }
+
+  input[type="number"], select {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--accent-bright);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.82rem;
+    padding: 5px 9px;
+    text-align: right;
+    outline: none;
+    width: 115px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  input[type="number"]:focus, select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(200,146,42,0.15);
+  }
+
+  select { cursor: pointer; text-align: left; }
+  select option { background: var(--surface2); color: var(--text); }
+
+  /* ── MODE TABS ── */
+  .mode-tabs { display: flex; }
+
+  .mode-tabs label {
+    flex: 1;
+    text-align: center;
+    padding: 8px 4px;
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--text-dim);
+    user-select: none;
+  }
+
+  .mode-tabs label:first-child { border-right: none; }
+  .mode-tabs input[type="radio"] { display: none; }
+  .mode-tabs label:has(input:checked) {
+    color: var(--accent-bright);
+    background: rgba(200,146,42,0.12);
+    border-color: var(--accent-dim);
+  }
+  .mode-tabs label:hover { color: var(--text); background: rgba(255,255,255,0.03); }
+
+  /* ── CHECKBOXES ── */
+  .checkbox-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+
+  .cb-label {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 0.68rem;
+    color: var(--text-dim);
+    cursor: pointer;
+    padding: 5px 7px;
+    border: 1px solid var(--border);
+    transition: all 0.15s;
+    user-select: none;
+  }
+
+  .cb-label:hover { color: var(--text); border-color: var(--border-bright); }
+  .cb-label input[type="checkbox"] { display: none; }
+
+  .cb-box {
+    width: 12px; height: 12px;
+    border: 1px solid var(--text-dim);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.15s;
+  }
+
+  .cb-label:has(input:checked) .cb-box { background: var(--accent); border-color: var(--accent-bright); }
+  .cb-label:has(input:checked) { color: var(--text-bright); border-color: var(--accent-dim); }
+  .cb-label:has(input:checked) .cb-box::after { content: '✓'; font-size: 9px; color: var(--bg); line-height: 1; }
+
+  /* ── DISTANCE TABLE ── */
+  .dist-input-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.7rem;
+    margin-top: 2px;
+  }
+
+  .dist-input-table th {
+    font-size: 0.57rem;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    text-align: left;
+    padding: 4px 6px 7px;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+    font-weight: normal;
+  }
+
+  .dist-input-table td { padding: 3px 3px; border-bottom: 1px solid rgba(46,53,40,0.4); }
+  .dist-input-table tr:last-child td { border-bottom: none; }
+
+  .dist-input-table input[type="number"] {
+    width: 100%;
+    font-size: 0.76rem;
+    padding: 4px 7px;
+    text-align: center;
+  }
+
+  .dist-id {
+    color: var(--accent-bright);
+    font-weight: bold;
+    text-align: center;
+    width: 34px;
+    padding-left: 4px !important;
+  }
+
+  .dist-use { width: 38px; text-align: center; }
+
+  .dist-toggle {
+    width: 16px; height: 16px;
+    border: 1px solid var(--text-dim);
+    display: inline-flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    background: var(--bg);
+    font-size: 10px;
+    color: transparent;
+    transition: all 0.15s;
+    user-select: none;
+    margin: auto;
+  }
+
+  .dist-toggle.active { background: var(--accent); border-color: var(--accent-bright); color: var(--bg); }
+
+  .dist-note {
+    font-size: 0.6rem;
+    color: var(--text-dim);
+    margin-top: 8px;
+    line-height: 1.55;
+  }
+
+
+  /* ── EQUIPMENT ROWS (enhanced) ── */
+  .eq-list { display: flex; flex-direction: column; gap: 4px; width: 100%; box-sizing: border-box; }
+
+  .eq-row {
+    display: grid;
+    grid-template-columns: 22px 1fr 44px;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 8px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+    width: 100%;
+  }
+
+  .eq-row:hover { border-color: var(--border-bright); }
+
+  .eq-row.checked {
+    border-color: var(--accent-dim);
+    background: rgba(200,146,42,0.05);
+  }
+
+  .eq-check-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+
+  .eq-checkbox { display: none; }
+
+  .eq-box {
+    width: 14px; height: 14px;
+    border: 1px solid var(--text-dim);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg);
+    font-size: 9px;
+    color: transparent;
+    transition: all 0.15s;
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+
+  .eq-row.checked .eq-box {
+    background: var(--accent);
+    border-color: var(--accent-bright);
+    color: var(--bg);
+  }
+
+  .eq-row.checked .eq-box::after { content: '✓'; }
+
+  .eq-name {
+    font-size: 0.67rem;
+    color: var(--text-dim);
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    user-select: none;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .eq-row.checked .eq-name { color: var(--text-bright); }
+
+  .eq-count {
+    width: 44px !important;   /* override global input[type="number"] width:115px */
+    min-width: 0;
+    box-sizing: border-box;
+    font-size: 0.66rem;
+    padding: 3px 4px;
+    text-align: center;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--accent-bright);
+    font-family: 'Share Tech Mono', monospace;
+    -webkit-appearance: none;
+    appearance: none;
+    outline: none;
+  }
+
+  .eq-count:focus { border-color: var(--accent); }
+  .eq-count::placeholder { color: var(--text-dim); font-size: 0.6rem; }
+
+  /* Custom position add row */
+  .eq-add-row {
+    display: flex;
+    gap: 4px;
+    margin-top: 6px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+  }
+
+  .eq-custom-input {
+    flex: 1;
+    font-size: 0.68rem;
+    padding: 5px 8px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Share Tech Mono', monospace;
+    outline: none;
+    min-width: 0;
+  }
+
+  .eq-custom-input:focus { border-color: var(--accent); }
+  .eq-custom-input::placeholder { color: var(--text-dim); font-size: 0.6rem; }
+
+  .eq-add-btn {
+    padding: 5px 10px;
+    background: transparent;
+    border: 1px solid var(--accent-dim);
+    color: var(--accent-bright);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.7rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .eq-add-btn:hover { background: rgba(200,146,42,0.1); border-color: var(--accent); }
+
+  /* Remove button on custom items */
+  .eq-remove-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-dim);
+    font-size: 0.75rem;
+    cursor: pointer;
+    padding: 0 3px;
+    line-height: 1;
+    transition: color 0.15s;
+    font-family: 'Share Tech Mono', monospace;
+  }
+
+  .eq-remove-btn:hover { color: var(--red-bright); }
+
+  /* Custom rows get a remove button column */
+  .eq-row.custom {
+    grid-template-columns: 22px 1fr 44px 20px;
+  }
+
+  .eq-hint {
+    font-size: 0.58rem;
+    color: var(--text-dim);
+    margin-top: 5px;
+    line-height: 1.5;
+  }
+
+
+  /* ── SPEED DROP ── */
+  #speedDropPanel.sd-hidden { display: none; }
+
+  .sd-toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .sd-toggle-label {
+    font-size: 0.66rem;
+    color: var(--text-dim);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .sd-body {
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .sd-body.active { display: flex; }
+
+  .sd-input-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .sd-label {
+    font-size: 0.66rem;
+    color: var(--text-dim);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    flex: 1;
+  }
+
+  .sd-input {
+    width: 84px !important;
+    font-size: 0.75rem;
+    padding: 5px 8px;
+    text-align: center;
+    font-family: 'Share Tech Mono', monospace;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--accent-bright);
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+    box-sizing: border-box;
+    transition: border-color 0.2s;
+  }
+
+  .sd-input:focus { border-color: var(--accent); }
+
+  .sd-note {
+    font-size: 0.58rem;
+    color: var(--text-dim);
+    line-height: 1.55;
+    border-left: 2px solid var(--accent-dim);
+    padding-left: 8px;
+  }
+
+  .sd-note strong { color: var(--accent-bright); }
+
+  /* Hold column in target table */
+  .hold-cell {
+    color: var(--accent-bright);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    font-family: 'Share Tech Mono', monospace;
+  }
+
+  .hold-cell.hold-zero {
+    color: var(--text-dim);
+    font-weight: 400;
+  }
+
+  .hold-header {
+    color: var(--accent) !important;
+  }
+
+  /* ── MATCH PANEL ── */
+  #matchPanel.hidden { opacity: 0.3; pointer-events: none; }
+
+  /* ── GENERATE BUTTON WRAP ── */
+  .gen-btn-wrap {
+    padding: 6px 0 32px;
+    flex-shrink: 0;
+    /* flex-shrink:0 prevents compression. margin-top:auto pushes it to
+       the bottom when content is short; padding-bottom:32px ensures it
+       is never visually clipped at the scroll container edge. */
+    margin-top: auto;
+  }
+
+  /* ── GENERATE BUTTON ── */
+  .gen-btn {
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 1.05rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    padding: 13px 20px;
+    cursor: pointer;
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+    transition: background 0.2s, transform 0.1s;
+  }
+
+  .gen-btn:hover { background: var(--accent-bright); }
+  .gen-btn:active { transform: scale(0.98); background: var(--accent-dim); }
+
+  .gen-btn::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+    transform: translateX(-100%);
+    transition: transform 0.4s;
+  }
+
+  .gen-btn:hover::before { transform: translateX(100%); }
+
+  /* ── OUTPUT AREA ── */
+  .output-area {
+    padding: 22px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    height: 100%;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    min-height: 280px;
+    color: var(--text-dim);
+    font-size: 0.68rem;
+    letter-spacing: 0.2em;
+    gap: 20px;
+    opacity: 0.42;
+  }
+
+  .empty-reticle {
+    width: 76px; height: 76px;
+    border: 1px solid currentColor;
+    border-radius: 50%;
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .empty-reticle::before, .empty-reticle::after { content: ''; position: absolute; background: currentColor; }
+  .empty-reticle::before { width: 1px; height: 100%; }
+  .empty-reticle::after  { width: 100%; height: 1px; }
+
+  /* ── STAGE CARDS ── */
+  .stage-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    margin-bottom: 14px;
+    animation: fadeIn 0.4s ease forwards;
+    opacity: 0;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .stage-header {
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    padding: 9px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .stage-num {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 1.25rem;
+    font-weight: 900;
+    color: var(--accent-bright);
+    letter-spacing: 0.1em;
+    min-width: 80px;
+  }
+
+  .stage-meta { display: flex; gap: 20px; margin-left: auto; }
+
+  .meta-item { font-size: 0.62rem; letter-spacing: 0.15em; color: var(--text-dim); }
+  .meta-item span { color: var(--accent2-bright); font-size: 0.82rem; }
+
+  .stage-body { padding: 16px; display: grid; grid-template-columns: auto 1fr; gap: 20px; }
+
+  .target-table { border-collapse: collapse; font-size: 0.7rem; }
+
+  .target-table th {
+    font-size: 0.57rem;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    text-align: left;
+    padding: 4px 14px 7px 0;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+    font-weight: normal;
+  }
+
+  .target-table td { padding: 5px 14px 5px 0; border-bottom: 1px solid rgba(46,53,40,0.5); color: var(--text); }
+  .target-table td:first-child { color: var(--accent-bright); font-weight: bold; }
+  .target-table tr:last-child td { border-bottom: none; }
+
+  .cof-section { border-left: 1px solid var(--border); padding-left: 18px; }
+
+  .cof-label { font-size: 0.58rem; letter-spacing: 0.25em; color: var(--accent); text-transform: uppercase; margin-bottom: 10px; }
+
+  .position-block { margin-bottom: 12px; }
+  .position-name { font-size: 0.62rem; letter-spacing: 0.18em; color: var(--accent2-bright); text-transform: uppercase; margin-bottom: 5px; }
+  .shot-sequence { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+
+  .shot-chip {
+    background: rgba(200,146,42,0.1);
+    border: 1px solid var(--accent-dim);
+    color: var(--accent-bright);
+    padding: 3px 8px;
+    font-size: 0.7rem;
+  }
+
+  .shot-arrow { color: var(--text-dim); font-size: 0.68rem; }
+
+  /* ── HELP MODAL ── */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.88);
+    z-index: 9999;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 30px 20px 50px;
+    overflow-y: auto;
+  }
+
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border-bright);
+    border-top: 2px solid var(--accent);
+    max-width: 800px;
+    width: 100%;
+    animation: fadeIn 0.25s ease;
+  }
+
+  .modal-header {
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .modal-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 900;
+    letter-spacing: 0.15em;
+    color: var(--accent-bright);
+    text-transform: uppercase;
+  }
+
+  .modal-close {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    padding: 5px 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .modal-close:hover { border-color: var(--red-bright); color: var(--red-bright); }
+
+  .modal-body { padding: 22px 24px; }
+
+  .help-section { margin-bottom: 28px; }
+  .help-section:last-child { margin-bottom: 0; }
+
+  .help-section-title {
+    font-size: 0.6rem;
+    letter-spacing: 0.3em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    padding-bottom: 7px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .help-section-title span { color: var(--accent-bright); font-size: 0.85rem; }
+
+  .help-p { font-size: 0.72rem; color: var(--text); line-height: 1.72; margin-bottom: 10px; }
+  .help-p:last-child { margin-bottom: 0; }
+
+  .help-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  .help-card { background: var(--surface2); border: 1px solid var(--border); padding: 12px 14px; }
+
+  .help-card-title {
+    font-size: 0.62rem;
+    color: var(--accent-bright);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 7px;
+  }
+
+  .help-card p { font-size: 0.68rem; color: var(--text-dim); line-height: 1.62; }
+  .help-card p strong { color: var(--text); }
+
+  .help-table { width: 100%; border-collapse: collapse; font-size: 0.68rem; }
+
+  .help-table th {
+    font-size: 0.57rem;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    text-align: left;
+    padding: 5px 12px 7px 0;
+    border-bottom: 1px solid var(--border);
+    font-weight: normal;
+    text-transform: uppercase;
+  }
+
+  .help-table td {
+    padding: 7px 12px 7px 0;
+    border-bottom: 1px solid rgba(46,53,40,0.4);
+    color: var(--text-dim);
+    vertical-align: top;
+    line-height: 1.58;
+  }
+
+  .help-table td:first-child { color: var(--accent-bright); white-space: nowrap; min-width: 120px; }
+  .help-table tr:last-child td { border-bottom: none; }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 7px;
+    font-size: 0.57rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    border: 1px solid;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+
+  .badge-club     { color: var(--accent2-bright); border-color: var(--accent2); }
+  .badge-regional { color: var(--accent-bright); border-color: var(--accent-dim); }
+  .badge-national { color: var(--red-bright);   border-color: var(--red); }
+
+  .modal-footer {
+    background: var(--surface2);
+    border-top: 1px solid var(--border);
+    padding: 11px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .modal-footer-text { font-size: 0.62rem; color: var(--text-dim); letter-spacing: 0.1em; }
+  .modal-footer-text strong { color: var(--text); }
+
+
+
+  /* ── COLLAPSIBLE PANEL ── */
+  .panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .panel-toggle {
+    font-size: 0.65rem;
+    color: var(--text-dim);
+    background: transparent;
+    border: 1px solid var(--border);
+    padding: 2px 8px;
+    cursor: pointer;
+    font-family: "Share Tech Mono", monospace;
+    letter-spacing: 0.1em;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+
+  .panel-toggle:hover { border-color: var(--accent-dim); color: var(--accent-bright); }
+
+  .panel-collapsible {
+    overflow: hidden;
+    transition: max-height 0.3s ease, opacity 0.3s ease;
+    max-height: 600px;
+    opacity: 1;
+  }
+
+  .panel-collapsible.collapsed {
+    max-height: 0;
+    opacity: 0;
+  }
+
+  /* ── CUSTOM TARGET TABLE ── */
+  #customTargetTable th:nth-child(3),
+  #customTargetTable td:nth-child(3) { min-width: 90px; }
+
+  #customTargetTable select {
+    width: 100%;
+    font-size: 0.7rem;
+    padding: 3px 5px;
+    text-align: left;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--accent-bright);
+    font-family: "Share Tech Mono", monospace;
+    -webkit-appearance: none;
+    appearance: none;
+    outline: none;
+  }
+
+  #customTargetTable select:focus {
+    border-color: var(--accent);
+  }
+
+  /* ── DISTANCE UNIT LABEL (dynamic) ── */
+  .dist-unit-label { color: var(--text-dim); font-size: 0.7rem; }
+
+  /* ── THEME SWITCHER ── */
+  .theme-switcher {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+  }
+
+  .theme-switcher-label {
+    font-size: 0.54rem;
+    letter-spacing: 0.25em;
+    color: var(--text-dim);
+  }
+
+  .theme-btns { display: flex; gap: 4px; }
+
+  .theme-btn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    font-family: "Share Tech Mono", monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.15em;
+    padding: 4px 9px;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .theme-btn:hover {
+    border-color: var(--border-bright);
+    color: var(--text);
+  }
+
+  .theme-btn.active {
+    border-color: var(--accent-dim);
+    color: var(--accent-bright);
+    background: rgba(0,0,0,0.3);
+  }
+
+  .theme-swatch {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: inline-block;
+  }
+
+
+  /* ── OUTPUT TOOLBAR ── */
+  .output-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 16px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    gap: 12px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .output-toolbar-label {
+    font-size: 0.58rem;
+    letter-spacing: 0.25em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+  }
+
+  .output-toolbar-actions { display: flex; gap: 6px; }
+
+  .output-action-btn {
+    padding: 5px 13px;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.12em;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+  }
+
+  .output-action-btn:hover { border-color: var(--accent-dim); color: var(--accent-bright); }
+  .output-action-btn.danger { color: var(--red-bright); border-color: var(--red); }
+  .output-action-btn.danger:hover { background: rgba(200,90,58,0.1); }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--border-bright); }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 820px) {
+    /* Grid stacks vertically; page scrolls as one document */
+    .main-grid {
+      grid-template-columns: 1fr;
+      height: auto;
+      overflow: visible;
+    }
+    .sidebar {
+      height: auto;
+      max-height: none;
+      overflow-y: visible;
+      overflow-x: visible;
+      padding-bottom: 8px;
+      position: static;
+    }
+    .output-area {
+      height: auto;
+      overflow-y: visible;
+      padding-bottom: 40px;
+    }
+    .stage-body { grid-template-columns: 1fr; }
+    .cof-section { border-left: none; border-top: 1px solid var(--border); padding-left: 0; padding-top: 14px; }
+    .help-grid { grid-template-columns: 1fr; }
+    .gen-btn-wrap { padding-bottom: 16px; }
+    .empty-state { min-height: 200px; }
+
+    /* ── MOBILE HEADER ── */
+
+    /* Wrap into two rows so nothing gets squeezed off screen.
+       Row 1: reticle + title + view tabs (space-between)
+       Row 2: status info on left, theme+help on right          */
+    .header-inner {
+      flex-wrap: wrap;
+      padding: 8px 12px 6px;
+      gap: 0;
+      row-gap: 6px;
+    }
+
+    /* Reticle — shrink but keep visible */
+    .reticle {
+      width: 30px;
+      height: 30px;
+      flex-shrink: 0;
+    }
+
+    /* Title block — limited width, no overflow */
+    .header-text {
+      flex-shrink: 1;
+      min-width: 0;
+    }
+    .header-text h1 {
+      font-size: 1.1rem;
+      letter-spacing: 0.05em;
+    }
+    .header-text p {
+      font-size: 0.5rem;
+      letter-spacing: 0.1em;
+      margin-top: 2px;
+    }
+
+    /* View tabs — sit after title, flush right in row 1 */
+    .view-tabs {
+      margin-left: auto;
+      flex-shrink: 0;
+    }
+
+    /* Header-right fills the entire second row */
+    .header-right {
+      width: 100%;
+      margin-left: 0;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      border-top: 1px solid var(--border);
+      padding-top: 6px;
+    }
+
+    /* Status block — left side of row 2, all items visible */
+    .header-status {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
+      column-gap: 10px;
+      font-size: 0.54rem;
+      letter-spacing: 0.07em;
+      line-height: 1.4;
+      text-align: left;
+      white-space: nowrap;
+      flex-shrink: 1;
+      min-width: 0;
+    }
+
+    .header-status a {
+      font-size: 0.54rem;
+      white-space: nowrap;
+    }
+
+    /* Right side of row 2: theme swatches + help */
+    .header-right-top {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      flex-shrink: 0;
+    }
+
+    /* Theme switcher — horizontal, swatches only */
+    .theme-switcher {
+      flex-direction: row;
+      align-items: center;
+      gap: 3px;
+    }
+    .theme-switcher-label { display: none; }
+    .theme-btns { flex-direction: row; gap: 3px; }
+    .theme-btn {
+      padding: 4px 6px;
+      font-size: 0;
+      gap: 0;
+    }
+    .theme-swatch { width: 10px; height: 10px; }
+
+    /* Help button — compact */
+    .help-btn {
+      font-size: 0.58rem;
+      padding: 5px 8px;
+      letter-spacing: 0.08em;
+      white-space: nowrap;
+    }
+  }
+
+  /* Portrait phones ≤ 430px — tighten further but keep all items */
+  @media (max-width: 430px) {
+    .header-text h1 { font-size: 0.95rem; }
+    .header-text p  { display: none; }
+    .reticle { width: 26px; height: 26px; }
+    .header-status {
+      font-size: 0.5rem;
+      column-gap: 7px;
+    }
+    .header-status a { font-size: 0.5rem; }
+    .view-tab {
+      font-size: 0.58rem;
+      padding: 5px 8px;
+    }
+  }
+
+  /* Tablets — slightly narrower sidebar */
+  @media (min-width: 821px) and (max-width: 1100px) {
+    .main-grid { grid-template-columns: 320px 1fr; }
+  }
+
+  /* ══════════════════════════════════════════
+     DRY FIRE MODE
+  ══════════════════════════════════════════ */
+
+  /* Top-level app view switcher */
+  .app-view { display: none; }
+  .app-view.active { display: flex; flex-direction: column; width: 100%; }
+
+  /* Main grid is itself a view */
+  .main-grid { display: grid; }
+  .main-grid.active { display: grid; }
+
+  /* Header mode pill */
+  .view-tabs {
+    display: flex;
+    gap: 0;
+    margin-left: 12px;
+    flex-shrink: 0;
+  }
+
+  .view-tab {
+    padding: 6px 14px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .view-tab:first-child { border-right: none; }
+  .view-tab.active {
+    background: rgba(200,146,42,0.12);
+    border-color: var(--accent-dim);
+    color: var(--accent-bright);
+  }
+
+  .view-tab:hover:not(.active) { color: var(--text); background: rgba(255,255,255,0.03); }
+
+  /* ── DRY FIRE LAYOUT ── */
+  #dryFireView {
+    flex: 1;
+    display: none;
+    flex-direction: row;
+    height: calc(100vh - 84px);
+    overflow: hidden;
+  }
+
+  #dryFireView.active { display: flex; }
+
+  /* Dry fire sidebar */
+  .df-sidebar {
+    width: 260px;
+    min-width: 260px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 14px 12px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Dry fire canvas area */
+  .df-canvas-wrap {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    background: #1a2a1a;
+    cursor: crosshair;
+  }
+
+  /* The scene canvas — hillside perspective */
+  #dfScene {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      to bottom,
+      #3a5a7a 0%,        /* sky top */
+      #6a9abf 28%,       /* sky lower */
+      #7aaa5a 42%,       /* treeline/horizon */
+      #4a6a32 55%,       /* near hillside */
+      #3a5228 70%,       /* ground mid */
+      #2a3a1e 100%       /* ground near */
+    );
+    background-attachment: local;
+  }
+
+  /* Sky zone — targets cannot be placed here */
+  .df-sky-zone {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 38%;
+    pointer-events: none;
+    z-index: 2;
+    /* subtle indicator — only visible in edit mode */
+  }
+
+  .df-sky-zone.show-zone {
+    background: repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 8px,
+      rgba(100,160,220,0.06) 8px,
+      rgba(100,160,220,0.06) 16px
+    );
+    border-bottom: 1px dashed rgba(100,160,220,0.25);
+  }
+
+  /* Target element on canvas */
+  .df-target {
+    position: absolute;
+    cursor: grab;
+    user-select: none;
+    transform: translate(-50%, -50%);
+    transition: filter 0.15s;
+    touch-action: none;
+  }
+
+  .df-target:hover { filter: brightness(1.35); z-index: 50; }
+  .df-target.dragging { cursor: grabbing; z-index: 100; filter: brightness(1.5); }
+  .df-target.selected { outline: 1px dashed var(--accent-bright); outline-offset: 3px; }
+
+  .df-target-label {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    color: var(--accent-bright);
+    background: rgba(0,0,0,0.65);
+    padding: 1px 4px;
+    border-radius: 2px;
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  /* Steel plate target shapes */
+  .df-shape-circle {
+    border-radius: 50%;
+    background: #b0b8a8;
+    border: 2px solid #e8dfc8;
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.4), inset 0 1px 3px rgba(255,255,255,0.15);
+  }
+
+  .df-shape-square {
+    background: #b0b8a8;
+    border: 2px solid #e8dfc8;
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.4), inset 0 1px 3px rgba(255,255,255,0.15);
+  }
+
+  .df-shape-ipsc {
+    background: #c8b888;
+    border: 2px solid #e8dfc8;
+    border-radius: 35% 35% 0 0 / 25% 25% 0 0;
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.4);
+    clip-path: polygon(20% 0%, 80% 0%, 100% 35%, 100% 100%, 0% 100%, 0% 35%);
+  }
+
+  .df-shape-animal {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: inherit;
+    filter: drop-shadow(0 1px 3px rgba(0,0,0,0.7));
+    line-height: 1;
+  }
+
+  .df-shape-custom {
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+
+  /* Distance ruler line (horizontal) */
+  .df-ruler-band {
+    position: absolute;
+    left: 0; right: 0;
+    border-top: 1px dashed rgba(200,146,42,0.2);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .df-ruler-label {
+    position: absolute;
+    right: 6px;
+    transform: translateY(-50%);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    color: rgba(200,146,42,0.5);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* ── DRY FIRE CONTROLS ── */
+  .df-toolbar {
+    position: absolute;
+    bottom: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 6px;
+    z-index: 200;
+    background: rgba(13,15,12,0.85);
+    border: 1px solid var(--border);
+    padding: 7px 10px;
+    backdrop-filter: blur(4px);
+  }
+
+  .df-tool-btn {
+    padding: 5px 12px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+
+  .df-tool-btn:hover { border-color: var(--accent-dim); color: var(--accent-bright); }
+  .df-tool-btn.active { background: rgba(200,146,42,0.15); border-color: var(--accent); color: var(--accent-bright); }
+  .df-tool-btn.danger { color: var(--red-bright); border-color: var(--red); }
+  .df-tool-btn.danger:hover { background: rgba(200,90,58,0.15); }
+
+  /* Upload input hidden */
+  #dfCustomUpload { display: none; }
+
+  /* Dry fire empty state */
+  .df-empty-hint {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(200,210,180,0.25);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.18em;
+    pointer-events: none;
+    z-index: 1;
+    text-align: center;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  /* Mobile dry fire adjustments */
+  @media (max-width: 820px) {
+    #dryFireView { flex-direction: column; height: auto; }
+    .df-sidebar { width: 100%; min-width: 0; border-right: none; border-bottom: 1px solid var(--border); }
+    .df-canvas-wrap { height: 70vw; min-height: 300px; }
+    .df-toolbar { bottom: 6px; padding: 5px 7px; flex-wrap: wrap; justify-content: center; }
+  }
+
+  /* ── PRINT / PDF EXPORT ── */
+  @media print {
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+
+    body {
+      background: #fff !important;
+      color: #000 !important;
+      overflow: visible !important;
+      height: auto !important;
+    }
+
+    header,
+    .sidebar,
+    .output-toolbar,
+    #dryFireView,
+    .modal-overlay,
+    #emptyState,
+    .view-tabs,
+    body::before { display: none !important; }
+
+    .main-grid {
+      display: block !important;
+      height: auto !important;
+      overflow: visible !important;
+    }
+
+    .output-area {
+      overflow: visible !important;
+      height: auto !important;
+      padding: 0 !important;
+    }
+
+    #builderView { display: block !important; }
+
+    .stage-card {
+      background: #fff !important;
+      border: 1px solid #aaa !important;
+      break-inside: avoid;
+      page-break-inside: avoid;
+      margin-bottom: 16px !important;
+      animation: none !important;
+      opacity: 1 !important;
+      box-shadow: none !important;
+    }
+
+    .stage-header { background: #f2f2f2 !important; border-bottom: 1px solid #ccc !important; }
+    .stage-num { color: #000 !important; font-size: 1rem !important; }
+    .meta-item { color: #333 !important; }
+    .meta-item span { color: #000 !important; }
+    .stage-body { background: #fff !important; }
+    .target-table th { color: #555 !important; border-bottom: 1px solid #ccc !important; }
+    .target-table td { color: #000 !important; border-bottom: 1px solid #eee !important; }
+    .cof-section { border-left: 1px solid #ccc !important; }
+    .cof-label { color: #333 !important; }
+    .position-name { color: #000 !important; }
+    .shot-chip {
+      background: #eee !important;
+      border: 1px solid #ccc !important;
+      color: #000 !important;
+      box-shadow: none !important;
+    }
+    .shot-arrow { color: #666 !important; }
+
+    .print-header {
+      display: block !important;
+      padding: 8px 0 12px;
+      border-bottom: 2px solid #000;
+      margin-bottom: 16px;
+    }
+
+    .print-header h2 {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 1rem;
+      margin: 0 0 3px;
+      letter-spacing: 0.08em;
+    }
+
+    .print-header p {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.65rem;
+      color: #555;
+      margin: 0;
+      letter-spacing: 0.06em;
+    }
+
+    @page { margin: 16mm 14mm; }
+  }
+
+  .print-header { display: none; }
+
+
+</style>
+</head>
+
+
+<!-- ═══════════════════ HELP MODAL ═══════════════════ -->
+<div class="modal-overlay" id="helpModal" onclick="closeHelpOnBg(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">◈ Documentation &amp; Reference</div>
+      <button class="modal-close" onclick="closeHelp()">✕ CLOSE</button>
+    </div>
+
+    <div class="modal-body">
+
+      <!-- OVERVIEW -->
+      <div class="help-section">
+        <div class="help-section-title"><span>◆</span> Overview</div>
+        <p class="help-p">The PRS &amp; NRL Hunter Stage Builder is a two-mode training and match-design tool for Precision Rifle Series and NRL Hunter competitors. It combines a <strong>Stage Builder</strong> for generating randomized match plans with a <strong>Dry Fire</strong> visualizer for turning those plans into a scaled, interactive target scene you can practice against.</p>
+        <p class="help-p">Use the <strong>◈ BUILDER</strong> and <strong>◎ DRY FIRE</strong> tabs in the header to switch between the two modes. They are designed to work together — build a stage, then import it directly into Dry Fire for a visual walk-through before you ever step to the line.</p>
+      </div>
+
+      <!-- MODES -->
+      <div class="help-section">
+        <div class="help-section-title"><span>◆</span> Application Modes</div>
+        <div class="help-grid">
+          <div class="help-card">
+            <div class="help-card-title">◈ Builder Mode</div>
+            <p>The primary stage and match design tool. Configure your range, discipline, equipment, and difficulty, then hit Generate to produce a fully randomized stage or multi-stage match card with target distances, plate sizes, round counts, time limits, and positional course-of-fire sequences. All output is saved in memory so it can be imported into Dry Fire at any time.</p>
+          </div>
+          <div class="help-card">
+            <div class="help-card-title">◎ Dry Fire Mode</div>
+            <p>A perspective-based target visualizer for dry fire practice. Targets are placed on a hillside scene and scaled by distance and MOA — closer targets sit lower and appear larger; distant targets appear smaller near the horizon. No targets can exist in the sky zone. Drag targets freely to adjust position. Combine with Builder by importing your last generated stage directly into the scene.</p>
+          </div>
+        </div>
+        <div style="margin-top:12px;">
+          <div class="help-card-title" style="font-size:0.58rem; letter-spacing:0.18em; color:var(--accent); margin-bottom:8px;">BUILDER SUB-MODES</div>
+          <div class="help-grid">
+            <div class="help-card">
+              <div class="help-card-title">Single Stage</div>
+              <p>Generates one stage based on current settings. Ideal for individual training drills, testing specific positional skills, or prototyping before adding to a match card.</p>
+            </div>
+            <div class="help-card">
+              <div class="help-card-title">Match Mode</div>
+              <p>Generates a full multi-stage match card. Set stage count and difficulty in Match Settings. Each stage is independently randomized from the same range and equipment pool, ensuring variety across the card.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DISCIPLINE -->
+      <div class="help-section">
+        <div class="help-section-title"><span>◆</span> Discipline</div>
+        <div class="help-grid">
+          <div class="help-card">
+            <div class="help-card-title">PRS — Precision Rifle Series</div>
+            <p>Generates stages using angular plate sizes in <strong>MOA</strong> or <strong>MIL</strong>. Scope Units selector is active. Focus logic controls plate size selection from the defined MOA/MIL pools. Custom Targets size dropdown shows numeric plate sizes.</p>
+          </div>
+          <div class="help-card">
+            <div class="help-card-title">NRL Hunter</div>
+            <p>Generates stages using animal silhouettes drawn from the full NRL Hunter target catalog, organized into three difficulty tiers. Scope Units selector is hidden. Focus logic maps to tiers — <strong>Small</strong> draws only Tier 1; <strong>Wind</strong> draws Tier 1–2; <strong>Elevation</strong> draws Tier 2–3; <strong>Balanced/Combined</strong> draw from all tiers. Custom Targets dropdown shows animals grouped by size tier.</p>
+            <p style="margin-top:6px; font-size:0.64rem; color:var(--text-dim); line-height:1.5;">
+              <strong style="color:var(--text);">Tier 1 — Small:</strong> Prairie Dog, Crow, Chicken, Rabbit, Squirrel<br>
+              <strong style="color:var(--text);">Tier 2 — Medium:</strong> Fox, Coyote, Turkey, Pig, Javelina, Otter, Bobcat<br>
+              <strong style="color:var(--text);">Tier 3 — Large:</strong> Ram, Deer, Wolf, Cougar, Bear, Elk
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- RANGE PARAMETERS -->
+      <div class="help-section">
+        <div class="help-section-title"><span>◆</span> Range Parameters &amp; Distance Table</div>
+        <p class="help-p"><strong>Min / Max Distance</strong> — Define the distance window available at your range. Values are entered in whichever unit you have selected (yards or meters) in Stage Configuration. Random target distances are drawn from within this band. All values are converted to yards internally for ballistic consistency.</p>
+        <p class="help-p"><strong>Custom Targets — OFF / ON</strong> — When set to OFF, the Custom Targets table is hidden and all distances and plate sizes are generated automatically. Switch to ON to reveal the table and specify exact distances, plate sizes, or both for any target slot.</p>
+        <p class="help-p"><strong>Custom Targets Table</strong> — Only visible when Custom Targets is ON. Each row represents one target slot and has three inputs: a distance field (in your chosen unit), a size dropdown restricted to valid plate sizes for your selected scope unit (MOA or MIL), and a USE toggle. Toggle ✓ to lock that row — both the distance and size will be used exactly as entered. Set size to AUTO to let the focus logic choose the plate size while still locking the distance, or leave distance blank to lock only the size. The table can be collapsed with the HIDE button once values are entered. Size options update automatically when you change the scope unit (MOA/MIL).</p>
+        <p class="help-p">The distance table rebuilds automatically when Target Count changes, preserving any values already entered.</p>
+      </div>
+
+      <!-- STAGE CONFIGURATION -->
+      <div class="help-section">
+        <div class="help-section-title"><span>◆</span> Stage Configuration</div>
+        <table class="help-table">
+          <thead><tr><th>Setting</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>Target Count</td>
+              <td>Number of steel targets in the stage (1–10). Each target receives a randomized distance (unless locked), a plate size based on focus, and a round allocation.</td>
+            </tr>
+            <tr>
+              <td>Distance Unit</td>
+              <td>Sets whether all distances are displayed in <strong>Yards (yd)</strong> or <strong>Meters (m)</strong>. Switching units automatically converts the Min/Max range parameters and any values entered in the Target Distance Table. Internal calculations always use yards for ballistic accuracy; meter values are converted on input and display only.</td>
+            </tr>
+            <tr>
+              <td>Focus — Balanced</td>
+              <td>Pulls plate sizes from the full MOA/MIL options pool. Best for general-purpose stages with varied challenge.</td>
+            </tr>
+            <tr>
+              <td>Focus — Wind</td>
+              <td>Biases toward mid-size plates at longer distances where horizontal wind drift is the dominant accuracy challenge.</td>
+            </tr>
+            <tr>
+              <td>Focus — Elevation</td>
+              <td>Selects mid-to-large plates with an emphasis on stages where vertical hold is the primary difficulty — useful for valley or hillside ranges.</td>
+            </tr>
+            <tr>
+              <td>Focus — Small Target</td>
+              <td>Restricts plate sizes to the smallest two options in the pool. Maximum accuracy demand; recommended for advanced shooters only.</td>
+            </tr>
+            <tr>
+              <td>Focus — Combined</td>
+              <td>Unrestricted random size selection across the entire pool. Greatest variety; simulates unpredictable match conditions.</td>
+            </tr>
+            <tr>
+              <td>Round Mode — Full</td>
+              <td>10–12 rounds, 105 second time limit, up to 3 positions. Competition-standard complexity. Tests round management, position transitions, and sustained accuracy under time pressure.</td>
+            </tr>
+            <tr>
+              <td>Round Mode — Mid Compression</td>
+              <td>6–8 rounds, 75–90 seconds, 2 positions. A balanced format that rewards efficient position setup and clean shot execution over brute speed.</td>
+            </tr>
+            <tr>
+              <td>Round Mode — Low Compression</td>
+              <td>4–6 rounds, 45–60 seconds, 1 position. Fast and decisive. Favors cold-bore first-round hit capability and rapid target acquisition. Ideal for speed drills.</td>
+            </tr>
+            <tr>
+              <td>Scope Units</td>
+              <td>Display plate sizes in <strong>MOA</strong> (Minutes of Angle) or <strong>MIL</strong> (Milliradians) to match your scope's reticle and turret system. Hidden in NRL Hunter mode.</td>
+            </tr>
+            <tr>
+              <td>Custom Time (sec)</td>
+              <td>Override the automatically calculated time limit with a specific value in seconds. Leave blank to use the default time for the selected Round Mode (105 sec for Full, 75–90 for Mid, 45–60 for Low). Useful for field matches, club events, or training sessions with fixed time windows.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- EQUIPMENT -->
+      <div class="help-section">
+        <div class="help-section-title"><span>◆</span> Equipment &amp; Positions</div>
+        <p class="help-p">Select all positional props available at your range. The builder draws positions from this pool based on round mode — Full uses up to 3 positions, Mid uses 2, and Low uses 1. At least one piece of equipment must be checked; the builder defaults to Barricade + Prone if none are selected.</p>
+        <p class="help-p"><strong>Position Count (#)</strong> — The optional number field to the right of each prop name sets how many times that prop can be used as a distinct position within a single stage. Leave it blank or set it to 1 for standard behavior (one position per prop). Set it to 2 or higher to allow the generator to use that prop for multiple positions in the same stage — useful for ranges with multiple barricades, stacked prone positions, or complex multi-stage props.</p>
+        <p class="help-p"><strong>Custom Positions</strong> — Type any name in the custom position field and click + ADD (or press Enter) to add it to the pool. Custom positions work identically to standard ones — they can be checked, given a count, and will appear in the stage course-of-fire output. Remove a custom position with the × button.</p>
+        <table class="help-table">
+          <thead><tr><th>Position</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td>Barricade</td><td>Vertical structure for standing, kneeling, or squatting supported shots. The most common PRS stage prop. Set count to 2+ if your range has multiple barricades.</td></tr>
+            <tr><td>Tripod</td><td>Three-legged field support. Requires deliberate deployment; often paired with standing or high kneeling positions at extended range.</td></tr>
+            <tr><td>Tank Trap</td><td>X-shaped steel obstacle offering unconventional supported positions. Tests rifle handling, contact point selection, and body geometry.</td></tr>
+            <tr><td>Rooftop</td><td>Elevated platform or simulated structure. Adds vertical engagement angles and challenges stability at height.</td></tr>
+            <tr><td>Prone</td><td>Traditional flat-ground prone position. Lowest profile and highest natural stability — the baseline for any rifleman.</td></tr>
+            <tr><td>Modified Prone</td><td>Elevated prone over a low obstacle, short bag stack, or terrain feature. Common in field-style and positional stages.</td></tr>
+            <tr><td>Custom</td><td>Any position name you define. Examples: "Round Table", "Fence Post", "Window", "Shooting Box", "Log", "Vehicle Hood". Appears in course-of-fire output exactly as entered.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- MATCH DIFFICULTY -->
+      <div class="help-section">
+        <div class="help-section-title"><span>◆</span> Match Difficulty</div>
+        <p class="help-p">Match difficulty defines the overall tier of a generated match and is intended to guide stage design intent for match directors. The builder uses this setting as a reference level — future versions will modulate plate sizes, distances, and time limits automatically based on the selected tier.</p>
+        <table class="help-table">
+          <thead><tr><th>Level</th><th>Intended Use &amp; Design Guidelines</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>Club <span class="badge badge-club">Beginner</span></td>
+              <td>Entry-level match format. Shorter distances (150–500 yd), larger plate sizes (2–4 MOA / 0.7–1.2 MIL), generous time limits, and simpler positions (barricade, prone). Designed to introduce new competitors to stage format, position deployment, and time management without overwhelming them. Recommended stage count: 4–6.</td>
+            </tr>
+            <tr>
+              <td>Regional <span class="badge badge-regional">Intermediate</span></td>
+              <td>Mid-tier competitive format. Engagements at 300–700 yd, mixed plate sizes (1–3 MOA / 0.3–0.7 MIL), moderate time pressure, 2-position stages common. Assumes familiarity with positional shooting, wind reading at distance, and basic ballistic compensation. Recommended stage count: 6–10.</td>
+            </tr>
+            <tr>
+              <td>National <span class="badge badge-national">Expert</span></td>
+              <td>High-level competition format. Extended ranges (600–1000+ yd), small plate emphasis (0.5–1.5 MOA / 0.2–0.5 MIL), compressed time windows (45–90 sec for many stages), and unconventional or stacked positions. Built for experienced competitors who can rapidly solve ballistic problems and maintain composure under time and positional stress. Recommended stage count: 10–16.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- READING OUTPUT -->
+      <div class="help-section">
+        <div class="help-section-title"><span>◆</span> Reading the Stage Output</div>
+        <table class="help-table">
+          <thead><tr><th>Field</th><th>Meaning</th></tr></thead>
+          <tbody>
+            <tr><td>Time Limit</td><td>Total seconds to expend all allocated rounds across all positions in the stage.</td></tr>
+            <tr><td>Total Rds</td><td>Total rounds to be fired in the stage, distributed across all targets.</td></tr>
+            <tr><td>Positions</td><td>Number of distinct prop or position changes required within the stage.</td></tr>
+            <tr><td>Dist</td><td>Target engagement distance displayed in your chosen unit (yards or meters). If a distance was locked in the Target Distance Table, that exact value is used. All distances are converted to yards internally for ballistic calculations.</td></tr>
+            <tr><td>Size / Animal</td><td>In PRS mode: target plate angular size in MOA or MIL — smaller values are harder at any given distance. In NRL Hunter mode: the animal silhouette (Chicken, Pig, Turkey, Ram) — Chicken is the smallest and hardest, Ram is the largest.</td></tr>
+            <tr><td>Rds</td><td>Total rounds allocated to that specific target across all positions in the stage.</td></tr>
+            <tr><td>Course of Fire</td><td>Per-position engagement sequence. Arrows (›) indicate shot order. The sequence is randomized to avoid consecutive shots on the same target where possible.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- DRY FIRE -->
+      <div class="help-section">
+        <div class="help-section-title"><span>◆</span> Dry Fire Mode</div>
+        <p class="help-p">Dry Fire mode renders your stage plan as a perspective-scaled hillside scene. Targets are positioned and sized based on their distance and MOA value, giving you a realistic visual reference for sight picture, target transitions, and positional setup before live fire.</p>
+
+        <div class="help-grid" style="margin-bottom:12px;">
+          <div class="help-card">
+            <div class="help-card-title">Scene &amp; Perspective</div>
+            <p>The scene simulates a hillside from your shooting position. Min distance targets appear near the bottom (foreground), max distance targets appear near the horizon. The sky occupies the top ~38% of the scene — targets cannot be placed or dragged into it. Enable <strong>Sky Zone</strong> to show a visible boundary, and <strong>Dist Bands</strong> to overlay yardage ruler lines across the scene.</p>
+          </div>
+          <div class="help-card">
+            <div class="help-card-title">Target Sizing</div>
+            <p>Target pixel size is calculated from MOA and distance. A larger MOA value or shorter distance produces a bigger target on screen. A 0.5 MOA plate at 800yd will appear very small; a 4 MOA plate at 100yd will appear large. This scaling mirrors real-world apparent target size so your dry fire sight picture maps to live fire expectations.</p>
+          </div>
+        </div>
+
+        <div class="help-card-title" style="font-size:0.58rem; letter-spacing:0.18em; color:var(--accent); margin-bottom:8px;">ADDING TARGETS</div>
+        <table class="help-table" style="margin-bottom:12px;">
+          <thead><tr><th>Method</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>⊕ Import Last Stage</td>
+              <td>Reads the most recently generated Builder stage and populates the scene with all targets at their correct distances and sizes. In PRS mode, targets render as geometric steel shapes. In NRL Hunter mode, targets render as animal emoji silhouettes. Units and distance range sync automatically from the Builder. <strong>Generate a stage in Builder first</strong>, then switch to Dry Fire and import.</td>
+            </tr>
+            <tr>
+              <td>◈ Generate Examples</td>
+              <td>Drop a set of randomly spaced practice targets onto the scene. Set count, shape type (Circle, Square, IPSC, or Mixed), and MOA size. Useful for general dry fire sessions when you don't have a specific stage plan.</td>
+            </tr>
+            <tr>
+              <td>↑ Upload Custom Image</td>
+              <td>Upload any image file (PNG, JPG, SVG) to use as a target face. Set the engagement distance before uploading — the image will be scaled and positioned like any other target. Use your own steel photos, manufacturer target diagrams, or printed target images.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="help-card-title" style="font-size:0.58rem; letter-spacing:0.18em; color:var(--accent); margin-bottom:8px;">INTERACTION</div>
+        <table class="help-table">
+          <thead><tr><th>Action</th><th>Result</th></tr></thead>
+          <tbody>
+            <tr><td>Drag target</td><td>Freely reposition any target on the scene. Horizontal movement is unrestricted. Vertical movement is clamped — targets cannot be dragged into the sky zone. Works with touch on mobile.</td></tr>
+            <tr><td>Click target once</td><td>Selects the target (dashed outline). Useful for visually identifying a specific target before removing it.</td></tr>
+            <tr><td>Click selected target</td><td>Prompts to remove the target from the scene.</td></tr>
+            <tr><td>Click scene background</td><td>Deselects all targets.</td></tr>
+            <tr><td>✕ Clear All</td><td>Removes all targets from the scene instantly. Cannot be undone.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- COMBINING BUILDER AND DRY FIRE -->
+      <div class="help-section">
+        <div class="help-section-title"><span>◆</span> Using Builder + Dry Fire Together</div>
+        <p class="help-p">Builder and Dry Fire are designed to be used in sequence. The recommended workflow for a training session or match prep is:</p>
+        <div class="help-card" style="margin-bottom:10px;">
+          <div class="help-card-title">Recommended Workflow</div>
+          <p style="line-height:2; font-size:0.68rem; color:var(--text-dim);">
+            <span style="color:var(--accent-bright);">1.</span> Open <strong>Builder</strong> — set your range parameters, discipline, focus, and round mode.<br>
+            <span style="color:var(--accent-bright);">2.</span> Hit <strong>▶ GENERATE</strong> to produce a stage or full match card.<br>
+            <span style="color:var(--accent-bright);">3.</span> Review the stage card — note target count, distances, sizes, and course of fire.<br>
+            <span style="color:var(--accent-bright);">4.</span> Switch to <strong>Dry Fire</strong> using the header tab.<br>
+            <span style="color:var(--accent-bright);">5.</span> Click <strong>⊕ Import Last Stage</strong> — targets appear on the hillside at correct distances and sizes.<br>
+            <span style="color:var(--accent-bright);">6.</span> Drag targets to match your actual range layout or steel positions.<br>
+            <span style="color:var(--accent-bright);">7.</span> Practice transitions and position changes against the scaled scene before going live.
+          </p>
+        </div>
+        <p class="help-p">If your range has fixed steel, use <strong>Custom Targets</strong> in the Builder to lock specific distances and sizes, generate the stage, then import — the scene will reflect your actual range setup with accurate scaling.</p>
+        <p class="help-p">For NRL Hunter, importing a stage populates the scene with the correct animal silhouettes at their assigned distances. Use this to visualize sight picture and holdover before a field match.</p>
+      </div>
+
+    </div><!-- /modal-body -->
+
+    <div class="modal-footer">
+      <div class="modal-footer-text">PRS Stage &amp; Match Builder // <strong>BUILD v1.3.1</strong></div>
+      <div class="modal-footer-text">Author: <strong>Charles Witherspoon</strong> &nbsp;<a href="https://instagram.com/dubs_does" target="_blank" rel="noopener" style="color:var(--text-dim); text-decoration:none; font-size:0.6rem; letter-spacing:0.1em; transition:color 0.2s;" onmouseover="this.style.color='var(--accent-bright)'" onmouseout="this.style.color='var(--text-dim)'">&#9653; @dubs_does</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ HEADER ═══════════════════ -->
+<header>
+  <div class="header-inner">
+    <div class="reticle">
+      <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="24" cy="24" r="22" stroke="#c8922a" stroke-width="1"/>
+        <circle cx="24" cy="24" r="12" stroke="#c8922a" stroke-width="0.75" stroke-dasharray="3 3"/>
+        <circle cx="24" cy="24" r="3" stroke="#e8a832" stroke-width="1.5"/>
+        <line x1="24" y1="0" x2="24" y2="16" stroke="#c8922a" stroke-width="1"/>
+        <line x1="24" y1="32" x2="24" y2="48" stroke="#c8922a" stroke-width="1"/>
+        <line x1="0" y1="24" x2="16" y2="24" stroke="#c8922a" stroke-width="1"/>
+        <line x1="32" y1="24" x2="48" y2="24" stroke="#c8922a" stroke-width="1"/>
+        <line x1="20" y1="4" x2="22" y2="4" stroke="#c8922a" stroke-width="0.75"/>
+        <line x1="26" y1="4" x2="28" y2="4" stroke="#c8922a" stroke-width="0.75"/>
+        <line x1="20" y1="44" x2="22" y2="44" stroke="#c8922a" stroke-width="0.75"/>
+        <line x1="26" y1="44" x2="28" y2="44" stroke="#c8922a" stroke-width="0.75"/>
+      </svg>
+    </div>
+    <div class="header-text">
+      <h1>PRS Stage Builder</h1>
+      <p>PRS &amp; NRL HUNTER // MATCH &amp; STAGE GENERATOR</p>
+    </div>
+    <div class="view-tabs">
+      <button class="view-tab active" onclick="switchView('builder')" id="tabBuilder">◈ BUILDER</button>
+      <button class="view-tab" onclick="switchView('dryfire')" id="tabDryFire">◎ DRY FIRE</button>
+    </div>
+    <div class="header-right">
+      <div class="header-right-top">
+        <div class="theme-switcher">
+          <div class="theme-switcher-label">THEME</div>
+          <div class="theme-btns">
+            <button class="theme-btn active" data-theme="amber" onclick="setTheme('amber')" title="Amber Tactical">
+              <span class="theme-swatch" style="background:#e8a832"></span>
+              <span>AMBER</span>
+            </button>
+            <button class="theme-btn" data-theme="nvg" onclick="setTheme('nvg')" title="Night Vision Green">
+              <span class="theme-swatch" style="background:#39ff39"></span>
+              <span>NVG</span>
+            </button>
+            <button class="theme-btn" data-theme="day" onclick="setTheme('day')" title="Daytime">
+              <span class="theme-swatch" style="background:#ffffff; border:1px solid #aaa"></span>
+              <span>DAY</span>
+            </button>
+          </div>
+        </div>
+        <button class="help-btn" onclick="openHelp()">? HELP &amp; DOCS</button>
+      </div>
+      <div class="header-status">
+        <div><span class="status-dot"></span>SYSTEM READY</div>
+        <div>BUILD v1.3.1</div>
+        <div style="font-size:0.58rem; margin-top:1px;">C. WITHERSPOON</div>
+        <div style="font-size:0.55rem; margin-top:2px;"><a href="https://instagram.com/dubs_does" target="_blank" rel="noopener" style="color:var(--text-dim); text-decoration:none; letter-spacing:0.1em; transition:color 0.2s;" onmouseover="this.style.color='var(--accent-bright)'" onmouseout="this.style.color='var(--text-dim)'">&#9653; @dubs_does</a></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ═══════════════════ BUILDER VIEW ═══════════════════ -->
+<div id="builderView" class="app-view active">
+<div class="main-grid">
+
+  <!-- ── SIDEBAR ── -->
+  <aside class="sidebar">
+
+    <!-- MODE -->
+    <div class="panel">
+      <div class="panel-label">Mode Select</div>
+      <div class="mode-tabs">
+        <label><input type="radio" name="mode" value="single" checked onchange="updateMode()"><span>Single Stage</span></label>
+        <label><input type="radio" name="mode" value="match" onchange="updateMode()"><span>Match Mode</span></label>
+      </div>
+      <div style="margin-top:8px; padding-top:8px; border-top:1px solid var(--border);">
+        <div class="panel-label" style="margin-bottom:8px;">Discipline</div>
+        <div class="mode-tabs">
+          <label><input type="radio" name="discipline" value="prs" checked onchange="updateDiscipline()"><span>PRS</span></label>
+          <label><input type="radio" name="discipline" value="nrl" onchange="updateDiscipline()"><span>NRL Hunter</span></label>
+        </div>
+      </div>
+    </div>
+
+    <!-- RANGE -->
+    <div class="panel">
+      <div class="panel-label">Range Parameters</div>
+      <div class="field-row">
+        <label class="field-label">MIN DISTANCE (<span class="dist-unit-label" id="rangeUnitLabel">YD</span>)</label>
+        <input type="number" id="minDist" value="400" min="50" max="2000">
+      </div>
+      <div class="field-row">
+        <label class="field-label">MAX DISTANCE (<span class="dist-unit-label" id="rangeUnitLabel2">YD</span>)</label>
+        <input type="number" id="maxDist" value="800" min="50" max="2000">
+      </div>
+      <div class="field-row" style="margin-top:8px; padding-top:8px; border-top:1px solid var(--border);">
+        <label class="field-label">CUSTOM TARGETS</label>
+        <div class="mode-tabs" style="width:115px;">
+          <label style="font-size:0.65rem;"><input type="radio" name="customDist" value="no" checked onchange="updateCustomDist()"><span>OFF</span></label>
+          <label style="font-size:0.65rem;"><input type="radio" name="customDist" value="yes" onchange="updateCustomDist()"><span>ON</span></label>
+        </div>
+      </div>
+    </div>
+
+    <!-- STAGE CONFIG -->
+    <div class="panel">
+      <div class="panel-label">Stage Configuration</div>
+      <div class="field-row">
+        <label class="field-label">TARGET COUNT</label>
+        <input type="number" id="targetCount" value="4" min="1" max="10" onchange="rebuildDistTable()">
+      </div>
+      <div class="field-row">
+        <label class="field-label">DISTANCE UNIT</label>
+        <select id="distUnit" onchange="updateDistUnit()">
+          <option value="yd">Yards (yd)</option>
+          <option value="m">Meters (m)</option>
+        </select>
+      </div>
+      <div class="field-row">
+        <label class="field-label">FOCUS</label>
+        <select id="focus">
+          <option value="balanced">Balanced</option>
+          <option value="wind">Wind</option>
+          <option value="elevation">Elevation</option>
+          <option value="small">Small Target</option>
+          <option value="combined">Combined</option>
+        </select>
+      </div>
+      <div class="field-row">
+        <label class="field-label">ROUND MODE</label>
+        <select id="roundMode">
+          <option value="full">Full</option>
+          <option value="mid">Mid Compression</option>
+          <option value="low">Low Compression</option>
+        </select>
+      </div>
+      <div class="field-row" id="prsUnitsRow">
+        <label class="field-label">SCOPE UNITS</label>
+        <select id="units" onchange="rebuildDistTable()">
+          <option value="MOA">MOA</option>
+          <option value="MIL">MIL</option>
+        </select>
+      </div>
+      <div class="field-row">
+        <label class="field-label">CUSTOM TIME (SEC)</label>
+        <input type="number" id="customTime" placeholder="auto" min="10" max="600" style="width:115px;">
+      </div>
+    </div>
+
+    <!-- CUSTOM TARGET TABLE -->
+    <div class="panel" id="distPanel" style="display:none;">
+      <div class="panel-header" onclick="toggleDistPanel()">
+        <div class="panel-label" style="margin-bottom:0; flex:1;">Custom Targets (<span id="distPanelUnit">yd</span>)</div>
+        <button class="panel-toggle" id="distPanelToggle">▲ HIDE</button>
+      </div>
+      <div class="panel-collapsible" id="distPanelBody" style="margin-top:11px;">
+        <table class="dist-input-table" id="customTargetTable">
+          <thead>
+            <tr>
+              <th>TGT</th>
+              <th>DIST (<span id="distTableUnit">YD</span>)</th>
+              <th id="sizeColHeader">SIZE</th>
+              <th style="text-align:center;width:34px;">USE</th>
+            </tr>
+          </thead>
+          <tbody id="distTableBody"></tbody>
+        </table>
+        <div class="dist-note" id="customTableNote">Toggle ✓ to lock a target's distance and/or animal/size. Leave as AUTO to let the generator choose. Unlocked distance slots use random values within range parameters.</div>
+      </div>
+    </div>
+
+    <!-- EQUIPMENT -->
+    <div class="panel" id="equipPanel">
+      <div class="panel-label">Equipment &amp; Positions</div>
+      <div class="eq-list" id="eqList">
+        <!-- Standard equipment rows (built by JS) -->
+      </div>
+      <!-- Custom position add -->
+      <div class="eq-add-row">
+        <input type="text" class="eq-custom-input" id="eqCustomInput" placeholder="Custom position name…" maxlength="40">
+        <button class="eq-add-btn" onclick="addCustomEquipment()">+ ADD</button>
+      </div>
+      <div class="eq-hint">
+        # = max times this prop is used in one stage.<br>Leave blank to use default (1 position per prop).
+      </div>
+    </div>
+
+    <!-- SPEED DROP -->
+    <div class="panel" id="speedDropPanel">
+      <div class="sd-toggle-row">
+        <span class="panel-label" style="margin-bottom:0;">Speed Drop</span>
+        <div class="mode-tabs" style="width:100px;">
+          <label style="font-size:0.65rem;"><input type="radio" name="speedDrop" value="off" checked onchange="updateSpeedDrop()"><span>OFF</span></label>
+          <label style="font-size:0.65rem;"><input type="radio" name="speedDrop" value="on" onchange="updateSpeedDrop()"><span>ON</span></label>
+        </div>
+      </div>
+      <div class="sd-body" id="sdBody">
+        <div class="sd-input-row">
+          <label class="sd-label" for="sdFactor">Speed Drop Factor</label>
+          <input type="number" class="sd-input" id="sdFactor" placeholder="e.g. 2.8" min="0" max="20" step="0.01">
+        </div>
+        <div class="sd-note">
+          <strong>Formula:</strong> (yards ÷ 100) − SDF = elevation hold in MIL<br>
+          Example: 528 yd, SDF 2.8 → 5.28 − 2.8 = <strong>2.48 MIL</strong><br><br>
+          Speed Drop is <strong>MIL-only</strong> by design. The math relies on the 1/100 yd relationship inherent to milliradians and has no MOA equivalent. Scope units will be treated as MIL regardless of selection above.
+        </div>
+      </div>
+    </div>
+
+    <!-- MATCH SETTINGS -->
+    <div class="panel" id="matchPanel">
+      <div class="panel-label">Match Settings</div>
+      <div class="field-row">
+        <label class="field-label">STAGE COUNT</label>
+        <input type="number" id="stageCount" value="8" min="1" max="20">
+      </div>
+      <div class="field-row">
+        <label class="field-label">DIFFICULTY</label>
+        <select id="difficulty">
+          <option value="club">Club</option>
+          <option value="regional">Regional</option>
+          <option value="national">National</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Generate button wrapper — padding ensures it's never clipped -->
+    <div class="gen-btn-wrap">
+      <button class="gen-btn" onclick="generate()">▶ GENERATE</button>
+    </div>
+
+  </aside>
+
+  <!-- ── OUTPUT ── -->
+  <main class="output-area">
+    <div class="output-toolbar" id="outputToolbar" style="display:none;">
+      <span class="output-toolbar-label">▶ STAGE OUTPUT</span>
+      <div class="output-toolbar-actions">
+        <button class="output-action-btn" onclick="printStages()" title="Print / Save as PDF">
+          ⎙ PRINT / PDF
+        </button>
+        <button class="output-action-btn danger" onclick="clearOutput()" title="Clear output">
+          ✕ CLEAR
+        </button>
+      </div>
+    </div>
+    <div class="empty-state" id="emptyState">
+      <div class="empty-reticle"></div>
+      <div>AWAITING STAGE GENERATION</div>
+    </div>
+    <div id="output"></div>
+  </main>
+
+</div><!-- /main-grid -->
+</div><!-- /builderView -->
+
+<!-- ═══════════════════ DRY FIRE VIEW ═══════════════════ -->
+<div id="dryFireView">
+
+  <!-- ── DRY FIRE SIDEBAR ── -->
+  <div class="df-sidebar">
+
+    <div class="panel">
+      <div class="panel-label">Scene Setup</div>
+      <div class="field-row">
+        <label class="field-label">MIN DIST (<span id="dfMinLabel">YD</span>)</label>
+        <input type="number" id="dfMin" value="100" min="25" max="2000" style="width:90px;">
+      </div>
+      <div class="field-row">
+        <label class="field-label">MAX DIST (<span id="dfMaxLabel">YD</span>)</label>
+        <input type="number" id="dfMax" value="600" min="25" max="2000" style="width:90px;">
+      </div>
+      <div class="field-row" style="margin-top:6px;">
+        <label class="field-label">UNIT</label>
+        <select id="dfUnit" onchange="updateDfUnit()" style="width:90px;">
+          <option value="yd">Yards</option>
+          <option value="m">Meters</option>
+        </select>
+      </div>
+      <div class="field-row" style="margin-top:6px; padding-top:6px; border-top:1px solid var(--border);">
+        <label class="field-label">SHOW SKY ZONE</label>
+        <div class="mode-tabs" style="width:90px;">
+          <label style="font-size:0.6rem;"><input type="radio" name="dfSkyZone" value="no" checked onchange="toggleSkyZone()"><span>OFF</span></label>
+          <label style="font-size:0.6rem;"><input type="radio" name="dfSkyZone" value="yes" onchange="toggleSkyZone()"><span>ON</span></label>
+        </div>
+      </div>
+      <div class="field-row">
+        <label class="field-label">DIST BANDS</label>
+        <div class="mode-tabs" style="width:90px;">
+          <label style="font-size:0.6rem;"><input type="radio" name="dfBands" value="no" checked onchange="toggleBands()"><span>OFF</span></label>
+          <label style="font-size:0.6rem;"><input type="radio" name="dfBands" value="yes" onchange="toggleBands()"><span>ON</span></label>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-label">Add Targets</div>
+
+      <!-- Generate from stage -->
+      <div style="margin-bottom:10px;">
+        <div class="field-label" style="margin-bottom:6px; color:var(--text);">FROM STAGE</div>
+        <button class="gen-btn" style="font-size:0.7rem; padding:8px; margin-top:0;" onclick="importFromStage()">⊕ IMPORT LAST STAGE</button>
+      </div>
+
+      <!-- Generate example targets -->
+      <div style="margin-bottom:10px; padding-top:8px; border-top:1px solid var(--border);">
+        <div class="field-label" style="margin-bottom:6px; color:var(--text);">EXAMPLE TARGETS</div>
+        <div class="field-row">
+          <label class="field-label">COUNT</label>
+          <input type="number" id="dfExCount" value="4" min="1" max="12" style="width:70px;">
+        </div>
+        <div class="field-row">
+          <label class="field-label">TYPE</label>
+          <select id="dfExType" style="width:100px; font-size:0.7rem;">
+            <option value="circle">Circle</option>
+            <option value="square">Square</option>
+            <option value="ipsc">IPSC</option>
+            <option value="mixed">Mixed</option>
+          </select>
+        </div>
+        <div class="field-row">
+          <label class="field-label">SIZE (MOA)</label>
+          <select id="dfExMoa" style="width:100px; font-size:0.7rem;">
+            <option value="0.5">0.5 MOA</option>
+            <option value="1">1 MOA</option>
+            <option value="2" selected>2 MOA</option>
+            <option value="3">3 MOA</option>
+            <option value="4">4 MOA</option>
+          </select>
+        </div>
+        <button class="gen-btn" style="font-size:0.7rem; padding:8px; margin-top:6px;" onclick="generateExampleTargets()">⊕ GENERATE EXAMPLES</button>
+      </div>
+
+      <!-- Custom target upload -->
+      <div style="padding-top:8px; border-top:1px solid var(--border);">
+        <div class="field-label" style="margin-bottom:6px; color:var(--text);">CUSTOM IMAGE TARGET</div>
+        <div class="field-row">
+          <label class="field-label">DIST (<span id="dfCustomDistLabel">YD</span>)</label>
+          <input type="number" id="dfCustomDist" value="300" min="25" max="2000" style="width:90px;">
+        </div>
+        <button class="gen-btn" style="font-size:0.7rem; padding:8px; margin-top:4px;" onclick="document.getElementById('dfCustomUpload').click()">⊕ UPLOAD TARGET IMAGE</button>
+        <input type="file" id="dfCustomUpload" accept="image/*" onchange="addCustomTarget(event)">
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-label">Instructions</div>
+      <div style="font-size:0.62rem; color:var(--text-dim); line-height:1.7;">
+        <div>◆ Drag targets to reposition</div>
+        <div>◆ Closer targets sit lower (nearer ground)</div>
+        <div>◆ Targets sized by distance &amp; MOA</div>
+        <div>◆ Targets cannot be placed in sky</div>
+        <div>◆ Click target to select &amp; delete</div>
+      </div>
+    </div>
+
+  </div><!-- /df-sidebar -->
+
+  <!-- ── DRY FIRE CANVAS ── -->
+  <div class="df-canvas-wrap" id="dfCanvasWrap">
+    <div id="dfScene">
+      <div class="df-sky-zone" id="dfSkyZone"></div>
+      <!-- Distance band rulers injected here -->
+      <div id="dfRulers"></div>
+      <!-- Targets injected here -->
+      <div id="dfTargets"></div>
+      <div class="df-empty-hint" id="dfHint">
+        <div style="font-size:2rem; opacity:0.4;">◎</div>
+        <div>GENERATE OR IMPORT TARGETS</div>
+        <div style="font-size:0.58rem; opacity:0.6;">Drag targets to adjust position</div>
+      </div>
+    </div>
+
+    <!-- Floating toolbar -->
+    <div class="df-toolbar">
+      <button class="df-tool-btn" onclick="importFromStage()">⊕ IMPORT</button>
+      <button class="df-tool-btn" onclick="generateExampleTargets()">◈ EXAMPLES</button>
+      <button class="df-tool-btn" onclick="document.getElementById('dfCustomUpload').click()">↑ UPLOAD</button>
+      <button class="df-tool-btn danger" onclick="clearDfTargets()">✕ CLEAR ALL</button>
+    </div>
+  </div><!-- /df-canvas-wrap -->
+
+</div><!-- /dryFireView -->
+
+<!-- ═══════════════════ SCRIPT ═══════════════════ -->
+<script>
+
+  const MOA_OPTIONS = [0.5, 1, 1.5, 2, 3, 4];
+  const MIL_OPTIONS_CONST = [0.2, 0.3, 0.5, 0.7, 1.0, 1.2];
+
+  // NRL Hunter animal silhouettes organized by difficulty tier (smallest/hardest → largest/easiest)
+  // Tier 1 = smallest/hardest, Tier 3 = largest/easiest
+  const NRL_ANIMALS = [
+    // Tier 1 — Small / Hardest
+    { name: 'Prairie Dog', label: 'Prairie Dog', tier: 1 },
+    { name: 'Crow',        label: 'Crow',        tier: 1 },
+    { name: 'Chicken',     label: 'Chicken',     tier: 1 },
+    { name: 'Rabbit',      label: 'Rabbit',      tier: 1 },
+    { name: 'Squirrel',    label: 'Squirrel',    tier: 1 },
+    // Tier 2 — Medium
+    { name: 'Fox',         label: 'Fox',         tier: 2 },
+    { name: 'Coyote',      label: 'Coyote',      tier: 2 },
+    { name: 'Turkey',      label: 'Turkey',      tier: 2 },
+    { name: 'Pig',         label: 'Pig',         tier: 2 },
+    { name: 'Javelina',    label: 'Javelina',    tier: 2 },
+    { name: 'Otter',       label: 'Otter',       tier: 2 },
+    { name: 'Bobcat',      label: 'Bobcat',      tier: 2 },
+    // Tier 3 — Large / Easiest
+    { name: 'Ram',         label: 'Ram',         tier: 3 },
+    { name: 'Deer',        label: 'Deer',        tier: 3 },
+    { name: 'Wolf',        label: 'Wolf',        tier: 3 },
+    { name: 'Cougar',      label: 'Cougar',      tier: 3 },
+    { name: 'Bear',        label: 'Bear',        tier: 3 },
+    { name: 'Elk',         label: 'Elk',         tier: 3 },
+  ];
+
+  // Helper: get animals by tier(s)
+  function animalsByTier(...tiers) {
+    return NRL_ANIMALS.filter(a => tiers.includes(a.tier)).map(a => a.name);
+  }
+
+  function getDiscipline() {
+    const el = document.querySelector('input[name="discipline"]:checked');
+    return el ? el.value : 'prs';
+  }
+
+  function updateDiscipline() {
+    const isNRL = getDiscipline() === 'nrl';
+    // Hide/show scope units row (not needed for NRL animal targets)
+    const unitsRow = document.getElementById('prsUnitsRow');
+    if (unitsRow) unitsRow.style.display = isNRL ? 'none' : '';
+    // Update size column header
+    const hdr = document.getElementById('sizeColHeader');
+    if (hdr) hdr.textContent = isNRL ? 'ANIMAL' : 'SIZE';
+    // Rebuild table so dropdowns reflect discipline
+    rebuildDistTable();
+  }
+
+  /* ── theme ── */
+  function setTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    document.querySelectorAll('.theme-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.theme === theme);
+    });
+    // Update reticle SVG colors per theme
+    const reticleParts = document.querySelectorAll('.reticle svg circle, .reticle svg line');
+    if (theme === 'nvg') {
+      reticleParts.forEach(el => {
+        if (el.getAttribute('stroke') === '#e8a832' || el.getAttribute('stroke') === '#000000') el.setAttribute('stroke', '#39ff39');
+        else el.setAttribute('stroke', '#00c800');
+      });
+    } else if (theme === 'day') {
+      reticleParts.forEach(el => {
+        el.setAttribute('stroke', el.getAttribute('stroke-width') === '1.5' ? '#000000' : '#333333');
+      });
+    } else {
+      reticleParts.forEach(el => {
+        if (el.getAttribute('stroke') === '#39ff39' || el.getAttribute('stroke') === '#000000' || el.getAttribute('stroke') === '#333333') {
+          el.setAttribute('stroke', el.getAttribute('stroke-width') === '1.5' ? '#e8a832' : '#c8922a');
+        } else {
+          el.setAttribute('stroke', '#c8922a');
+        }
+      });
+    }
+    try { localStorage.setItem('prs-theme', theme); } catch(e) {}
+  }
+  const MIL_OPTIONS = [0.2, 0.3, 0.5, 0.7, 1.0, 1.2];
+
+  /* ── utils ── */
+  const rand    = (mn, mx) => Math.random() * (mx - mn) + mn;
+  const randInt = (mn, mx) => Math.floor(rand(mn, mx));
+  const shuffle = arr => [...arr].sort(() => Math.random() - 0.5);
+
+  /* ── help modal ── */
+  function openHelp()  { document.getElementById('helpModal').classList.add('open'); }
+  function closeHelp() { document.getElementById('helpModal').classList.remove('open'); }
+  function closeHelpOnBg(e) { if (e.target === document.getElementById('helpModal')) closeHelp(); }
+
+  /* ── mode ── */
+  function updateMode() {
+    const isMatch = document.querySelector('input[name="mode"]:checked').value === 'match';
+    document.getElementById('matchPanel').classList.toggle('hidden', !isMatch);
+    // Speed Drop is training-only — hide entirely in match mode
+    document.getElementById('speedDropPanel').classList.toggle('sd-hidden', isMatch);
+    // Also force speed drop OFF when switching to match
+    if (isMatch) {
+      const offRadio = document.querySelector('input[name="speedDrop"][value="off"]');
+      if (offRadio) { offRadio.checked = true; updateSpeedDrop(); }
+    }
+  }
+
+  /* ── distance table & unit helpers ── */
+  const YD_TO_M = 0.9144;
+  const M_TO_YD = 1.09361;
+
+  function getDistUnit() {
+    return document.getElementById('distUnit') ? document.getElementById('distUnit').value : 'yd';
+  }
+
+  function toYards(val) {
+    return getDistUnit() === 'm' ? Math.round(val * M_TO_YD) : val;
+  }
+
+  function fromYards(val) {
+    return getDistUnit() === 'm' ? Math.round(val * YD_TO_M) : val;
+  }
+
+  function updateDistUnit() {
+    const unit = getDistUnit();
+    const unitUpper = unit.toUpperCase();
+    // Update all unit labels
+    ['rangeUnitLabel','rangeUnitLabel2'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = unitUpper;
+    });
+    const dpu = document.getElementById('distPanelUnit');
+    if (dpu) dpu.textContent = unit;
+    const dtu = document.getElementById('distTableUnit');
+    if (dtu) dtu.textContent = unitUpper;
+    // Convert range inputs
+    const minEl = document.getElementById('minDist');
+    const maxEl = document.getElementById('maxDist');
+    if (unit === 'm') {
+      minEl.value = Math.round(parseInt(minEl.value) * YD_TO_M);
+      maxEl.value = Math.round(parseInt(maxEl.value) * YD_TO_M);
+    } else {
+      minEl.value = Math.round(parseInt(minEl.value) * M_TO_YD);
+      maxEl.value = Math.round(parseInt(maxEl.value) * M_TO_YD);
+    }
+    // Convert any locked distances in the table
+    const rows = document.querySelectorAll('#distTableBody tr');
+    rows.forEach(tr => {
+      const inp = tr.querySelector('input');
+      const val = parseInt(inp.value);
+      if (val > 0) {
+        inp.value = unit === 'm' ? Math.round(val * YD_TO_M) : Math.round(val * M_TO_YD);
+      }
+    });
+  }
+
+  function updateCustomDist() {
+    const on = document.querySelector('input[name="customDist"]:checked').value === 'yes';
+    const panel = document.getElementById('distPanel');
+    if (panel) panel.style.display = on ? 'block' : 'none';
+  }
+
+  function toggleDistPanel() {
+    const body = document.getElementById('distPanelBody');
+    const btn  = document.getElementById('distPanelToggle');
+    body.classList.toggle('collapsed');
+    btn.textContent = body.classList.contains('collapsed') ? '▼ SHOW' : '▲ HIDE';
+  }
+
+  function getSizeOptions(units) {
+    return units === 'MOA' ? MOA_OPTIONS : MIL_OPTIONS;
+  }
+
+  function buildSizeSelect(units, selectedVal) {
+    const isNRL = getDiscipline() === 'nrl';
+    let html = `<select>`;
+    html += `<option value="auto"${selectedVal === 'auto' ? ' selected' : ''}>AUTO</option>`;
+    if (isNRL) {
+      const tierLabels = { 1: 'Small', 2: 'Medium', 3: 'Large' };
+      let lastTier = null;
+      NRL_ANIMALS.forEach(a => {
+        if (a.tier !== lastTier) {
+          html += `<optgroup label="── ${tierLabels[a.tier]} ──">`;
+          lastTier = a.tier;
+        }
+        html += `<option value="${a.name}"${selectedVal === a.name ? ' selected' : ''}>${a.label}</option>`;
+      });
+    } else {
+      getSizeOptions(units).forEach(o => {
+        html += `<option value="${o}"${String(selectedVal) === String(o) ? ' selected' : ''}>${o} ${units}</option>`;
+      });
+    }
+    html += `</select>`;
+    return html;
+  }
+
+  function rebuildDistTable() {
+    const count = Math.max(1, Math.min(10, parseInt(document.getElementById('targetCount').value) || 4));
+    const units = document.getElementById('units').value;
+    const tbody = document.getElementById('distTableBody');
+
+    // Preserve existing row values
+    const prev = Array.from(tbody.querySelectorAll('tr')).map(tr => {
+      const inp = tr.querySelector('input');
+      const sel = tr.querySelector('select');
+      const tog = tr.querySelector('.dist-toggle');
+      return {
+        val:    inp  ? inp.value  : '',
+        size:   sel  ? sel.value  : 'auto',
+        active: tog  ? tog.classList.contains('active') : false
+      };
+    });
+
+    tbody.innerHTML = '';
+    for (let i = 0; i < count; i++) {
+      const p = prev[i] || { val: '', size: 'auto', active: false };
+      const tr = document.createElement('tr');
+      tr.innerHTML =
+        `<td class="dist-id">T${i + 1}</td>` +
+        `<td><input type="number" min="1" max="5000" placeholder="rnd" value="${p.val}"></td>` +
+        `<td>${buildSizeSelect(units, p.size)}</td>` +
+        `<td class="dist-use"><div class="dist-toggle${p.active ? ' active' : ''}" onclick="toggleDist(this)">${p.active ? '✓' : ''}</div></td>`;
+      tbody.appendChild(tr);
+    }
+  }
+
+  // Rebuild table when units change so size options update
+  document.addEventListener('change', function(e) {
+    if (e.target && e.target.id === 'units') rebuildDistTable();
+  });
+
+  function toggleDist(el) {
+    el.classList.toggle('active');
+    el.textContent = el.classList.contains('active') ? '✓' : '';
+  }
+
+  function getLockedTargets() {
+    // Returns array of {dist, size} — dist in yards internally, size null if AUTO
+    return Array.from(document.querySelectorAll('#distTableBody tr')).map(tr => {
+      const active  = tr.querySelector('.dist-toggle').classList.contains('active');
+      const distVal = parseInt(tr.querySelector('input').value);
+      const sizeEl  = tr.querySelector('select');
+      const sizeVal = sizeEl ? sizeEl.value : 'auto';
+      return {
+        dist: (active && distVal > 0) ? toYards(distVal) : null,
+        size: (active && sizeVal !== 'auto') ? parseFloat(sizeVal) : null
+      };
+    });
+  }
+
+  // Keep backward-compatible alias used by generateDistances
+  function getLockedDistances() {
+    return getLockedTargets().map(t => t.dist);
+  }
+
+  /* ── stage logic ── */
+  function generateDistances(min, max, count, locked) {
+    // min/max are in the user's chosen unit; convert to yards for internal use
+    const minYd = toYards(min);
+    const maxYd = toYards(max);
+    return locked.map(l => l !== null ? l : Math.round(rand(minYd, maxYd)));
+  }
+
+  function pickPlate(focus, units) {
+    if (getDiscipline() === 'nrl') {
+      // NRL Hunter: focus maps to animal difficulty tiers
+      // small   = Tier 1 only (smallest/hardest)
+      // wind    = Tier 1 + 2 (small to medium)
+      // elevation = Tier 2 + 3 (medium to large — varied vertical angles suit larger steel)
+      // balanced  = all tiers
+      // combined  = all tiers (max variety)
+      let pool;
+      if (focus === 'small')          pool = animalsByTier(1);
+      else if (focus === 'wind')      pool = animalsByTier(1, 2);
+      else if (focus === 'elevation') pool = animalsByTier(2, 3);
+      else                            pool = animalsByTier(1, 2, 3);
+      return pool[randInt(0, pool.length)];
+    }
+    const options = units === 'MOA' ? MOA_OPTIONS : MIL_OPTIONS;
+    let pool = [...options];
+    if (focus === 'small')     pool = options.slice(0, 2);
+    if (focus === 'elevation') pool = options.slice(1, 4);
+    if (focus === 'wind')      pool = options.slice(1, 3);
+    return pool[randInt(0, pool.length)];
+  }
+
+  function getRoundProfile(mode) {
+    const customTime = parseInt(document.getElementById('customTime').value);
+    const hasCustom  = !isNaN(customTime) && customTime >= 10;
+    if (mode === 'full') return { rounds: randInt(10, 13), time: hasCustom ? customTime : 105 };
+    if (mode === 'mid')  return { rounds: randInt(6, 9),   time: hasCustom ? customTime : randInt(75, 91) };
+    return                      { rounds: randInt(4, 7),   time: hasCustom ? customTime : randInt(45, 61) };
+  }
+
+  function allocateRounds(targets, total) {
+    const alloc = targets.map(t => ({ ...t, rounds: 0 }));
+    let rem = total;
+    for (let i = 0; i < alloc.length && rem > 0; i++, rem--) alloc[i].rounds++;
+    while (rem > 0) { alloc[randInt(0, alloc.length)].rounds++; rem--; }
+    return alloc;
+  }
+
+  function buildEngagementSequence(targets) {
+    let pool = [];
+    targets.forEach(t => { for (let i = 0; i < t.rounds; i++) pool.push(t.id); });
+    pool = shuffle(pool);
+    for (let i = 1; i < pool.length; i++) {
+      if (pool[i] === pool[i - 1]) {
+        const swap = pool.findIndex((v, j) => j > i && v !== pool[i]);
+        if (swap > i) [pool[i], pool[swap]] = [pool[swap], pool[i]];
+      }
+    }
+    return pool;
+  }
+
+  function splitAcrossPositions(seq, positions) {
+    const perPos = Math.floor(seq.length / positions.length);
+    const rem    = seq.length % positions.length;
+    let idx = 0;
+    return positions.map((_, i) => {
+      const count = perPos + (i === positions.length - 1 ? rem : 0);
+      const slice = seq.slice(idx, idx + count);
+      idx += count;
+      return slice;
+    });
+  }
+
+  function buildStage(globalMin, globalMax) {
+    const targetCount  = parseInt(document.getElementById('targetCount').value);
+    const focus        = document.getElementById('focus').value;
+    const roundMode    = document.getElementById('roundMode').value;
+    const units        = document.getElementById('units').value;
+    const distUnit     = getDistUnit();
+    const discipline   = getDiscipline();
+    // Build equipment pool — each checked item contributes itself N times (its count value)
+    let equipment = getEquipmentPool();
+    if (!equipment.length) equipment = ['Barricade', 'Prone'];
+
+    // Build locked target array padded to targetCount
+    const lockedTargets = getLockedTargets().slice(0, targetCount);
+    while (lockedTargets.length < targetCount) lockedTargets.push({ dist: null, size: null });
+
+    const lockedDists = lockedTargets.map(t => t.dist);
+
+    // generateDistances returns yards; convert for display
+    const distancesYd      = generateDistances(globalMin, globalMax, targetCount, lockedDists);
+    const distancesDisplay = distancesYd.map(d => distUnit === 'm' ? Math.round(d * YD_TO_M) : d);
+
+    // For NRL, size is animal name; for PRS, size is numeric MOA/MIL value
+    let targets = distancesDisplay.map((d, i) => ({
+      id: 'T' + (i + 1),
+      distance: d,
+      size: lockedTargets[i].size !== null ? lockedTargets[i].size : pickPlate(focus, units)
+    }));
+    targets = shuffle(targets);
+
+    const roundProfile    = getRoundProfile(roundMode);
+    const allocated       = allocateRounds(targets, roundProfile.rounds);
+    const engagementOrder = buildEngagementSequence(allocated);
+
+    const posCount  = roundMode === 'full' ? 3 : (roundMode === 'mid' ? 2 : 1);
+    const positions = shuffle(equipment).slice(0, Math.min(posCount, equipment.length));
+    const split     = splitAcrossPositions(engagementOrder, positions);
+
+    // Display label for size column header
+    const sizeLabel = discipline === 'nrl' ? 'ANIMAL' : units;
+
+    const speedDrop = getSpeedDrop();
+    // Speed drop needs distances in yards regardless of display unit
+    // distancesYd is already in yards — pass both for the render layer
+    return { targets: allocated, split, positions, totalRounds: roundProfile.rounds, time: roundProfile.time, units, distUnit, discipline, sizeLabel, speedDrop, distancesYd };
+  }
+
+  /* ── render ── */
+  function renderStage(stage, index = null) {
+    const title = index !== null ? `STAGE ${String(index + 1).padStart(2, '0')}` : 'SINGLE STAGE';
+    const delay = (index || 0) * 70;
+
+    let h = `<div class="stage-card" style="animation-delay:${delay}ms">`;
+
+    h += `<div class="stage-header">
+      <div class="stage-num">${title}</div>
+      <div class="stage-meta">
+        <div class="meta-item">TIME LIMIT<br><span>${stage.time}s</span></div>
+        <div class="meta-item">TOTAL RDS<br><span>${stage.totalRounds}</span></div>
+        <div class="meta-item">POSITIONS<br><span>${stage.positions.length}</span></div>
+      </div>
+    </div>`;
+
+    h += `<div class="stage-body"><div>`;
+    const sizeHdr = stage.discipline === 'nrl' ? 'ANIMAL' : 'SIZE';
+    const sd = stage.speedDrop;
+    const showHold = sd && sd.active;
+
+    // Build a lookup: target id → distance in yards (for speed drop calc)
+    // distancesYd is parallel to the original target order before shuffle;
+    // targets now carry their own distance value — use that, converting if needed.
+    h += `<table class="target-table"><thead><tr><th>TGT</th><th>DIST</th><th>${sizeHdr}</th><th>RDS</th>${showHold ? '<th class="hold-header">HOLD</th>' : ''}</tr></thead><tbody>`;
+    stage.targets.forEach(t => {
+      const sizeDisplay = stage.discipline === 'nrl'
+        ? t.size
+        : `${t.size} ${stage.units}`;
+
+      let holdCell = '';
+      if (showHold) {
+        // Convert display distance back to yards for the formula
+        const distYd = stage.distUnit === 'm'
+          ? Math.round(t.distance * 1.09361)
+          : t.distance;
+        const raw  = (distYd / 100) - sd.sdf;
+        const hold = Math.max(0, raw);
+        const isZero = raw <= 0;
+        const holdStr = isZero ? '—' : hold.toFixed(2) + ' MIL';
+        holdCell = `<td class="hold-cell${isZero ? ' hold-zero' : ''}">${holdStr}</td>`;
+      }
+
+      h += `<tr><td>${t.id}</td><td>${t.distance}${stage.distUnit}</td><td>${sizeDisplay}</td><td>${t.rounds}</td>${holdCell}</tr>`;
+    });
+    h += `</tbody></table></div>`;
+
+    h += `<div class="cof-section"><div class="cof-label">Course of Fire</div>`;
+    stage.positions.forEach((pos, i) => {
+      const shots = stage.split[i];
+      h += `<div class="position-block"><div class="position-name">◆ ${pos}</div><div class="shot-sequence">`;
+      shots.forEach((s, j) => {
+        h += `<div class="shot-chip">${s}</div>`;
+        if (j < shots.length - 1) h += `<span class="shot-arrow">›</span>`;
+      });
+      h += `</div></div>`;
+    });
+    h += `</div></div></div>`;
+    return h;
+  }
+
+  /* ── generate ── */
+  function generate() {
+    const mode      = document.querySelector('input[name="mode"]:checked').value;
+    const globalMin = parseInt(document.getElementById('minDist').value);
+    const globalMax = parseInt(document.getElementById('maxDist').value);
+
+    if (globalMin >= globalMax) { alert('MIN distance must be less than MAX distance.'); return; }
+    if (isNaN(globalMin) || isNaN(globalMax)) { alert('Please enter valid distance values.'); return; }
+
+    document.getElementById('emptyState').style.display = 'none';
+    let output = '';
+
+    if (mode === 'single') {
+      output = renderStage(buildStage(globalMin, globalMax));
+    } else {
+      const stageCount = parseInt(document.getElementById('stageCount').value);
+      for (let i = 0; i < stageCount; i++) output += renderStage(buildStage(globalMin, globalMax), i);
+    }
+
+    document.getElementById('output').innerHTML = output;
+    document.getElementById('outputToolbar').style.display = output.trim() ? 'flex' : 'none';
+  }
+
+  /* ── device detection ── */
+  function detectDevice() {
+    const ua = navigator.userAgent || navigator.vendor || window.opera;
+    const isMobileUA = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(ua);
+    const isTouchNarrow = window.innerWidth <= 820;
+    const isMobile = isMobileUA || isTouchNarrow;
+    document.body.classList.toggle('is-mobile', isMobile);
+    document.body.classList.toggle('is-desktop', !isMobile);
+    return isMobile;
+  }
+
+  detectDevice();
+  window.addEventListener('resize', detectDevice);
+
+
+
+  /* ══════════════════════════════════════════════════════
+     VIEW SWITCHING
+  ══════════════════════════════════════════════════════ */
+  function switchView(view) {
+    const builderView = document.getElementById('builderView');
+    const dfView      = document.getElementById('dryFireView');
+    const tabB        = document.getElementById('tabBuilder');
+    const tabD        = document.getElementById('tabDryFire');
+
+    if (view === 'dryfire') {
+      builderView.style.display = 'none';
+      dfView.classList.add('active');
+      tabB.classList.remove('active');
+      tabD.classList.add('active');
+      // Sync units from builder
+      syncDfUnitsFromBuilder();
+      renderDfRulers();
+    } else {
+      builderView.style.display = '';
+      dfView.classList.remove('active');
+      tabB.classList.add('active');
+      tabD.classList.remove('active');
+    }
+  }
+
+  /* ══════════════════════════════════════════════════════
+     DRY FIRE STATE
+  ══════════════════════════════════════════════════════ */
+  let dfTargetList = []; // { id, dist, moa, shape, x, y, label, el, imgSrc }
+  let dfIdCounter  = 0;
+  let customImgSrc = null; // last uploaded custom image
+
+  // Sky zone = top 38% of canvas — no target centers above this
+  const SKY_FRACTION = 0.38;
+
+  /* ══════════════════════════════════════════════════════
+     UNIT SYNC
+  ══════════════════════════════════════════════════════ */
+  function syncDfUnitsFromBuilder() {
+    const builderUnit = getDistUnit(); // 'yd' or 'm'
+    document.getElementById('dfUnit').value = builderUnit;
+    updateDfUnit();
+
+    // Pre-fill min/max from builder if reasonable
+    const bMin = parseInt(document.getElementById('minDist').value) || 100;
+    const bMax = parseInt(document.getElementById('maxDist').value) || 600;
+    document.getElementById('dfMin').value = bMin;
+    document.getElementById('dfMax').value = bMax;
+  }
+
+  function updateDfUnit() {
+    const u = document.getElementById('dfUnit').value.toUpperCase();
+    ['dfMinLabel','dfMaxLabel','dfCustomDistLabel'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = u;
+    });
+  }
+
+  /* ══════════════════════════════════════════════════════
+     DISTANCE → VERTICAL POSITION MAPPING
+     Closer (min dist) → bottom of valid zone (near ground)
+     Farther (max dist) → top of valid zone (just below horizon)
+  ══════════════════════════════════════════════════════ */
+  function distToYPercent(dist) {
+    const minD = parseFloat(document.getElementById('dfMin').value) || 100;
+    const maxD = parseFloat(document.getElementById('dfMax').value) || 600;
+    // Clamp dist
+    const d = Math.max(minD, Math.min(maxD, dist));
+    // Normalize 0=min, 1=max
+    const t = (d - minD) / Math.max(1, maxD - minD);
+    // Map: min dist → 92% (near ground), max dist → 42% (just below horizon)
+    const yMin = 0.92; // bottom of valid placement area
+    const yMax = SKY_FRACTION + 0.04; // just below sky boundary
+    return yMin - t * (yMin - yMax);
+  }
+
+  /* ══════════════════════════════════════════════════════
+     SIZE CALCULATION
+     MOA to pixel size based on distance and canvas width
+     1 MOA ≈ 1.047" per 100yd  → scale relative to canvas
+  ══════════════════════════════════════════════════════ */
+  function moaToPx(moa, distYd) {
+    const wrap  = document.getElementById('dfCanvasWrap');
+    const w     = wrap ? wrap.offsetWidth : 800;
+    // Reference: at 100yd, 1MOA ≈ 1.047". Canvas represents ~50ft (600in) horizontal span
+    // We scale so that a 4 MOA target at 100yd is clearly visible (~3% of canvas width)
+    const refPx = w * 0.035; // reference size in px for 1 MOA at 100yd
+    const sizePx = refPx * moa * (100 / Math.max(50, distYd));
+    return Math.max(6, Math.min(w * 0.25, sizePx)); // clamp: never tiny, never huge
+  }
+
+  /* ══════════════════════════════════════════════════════
+     SKY ZONE & RULER BANDS
+  ══════════════════════════════════════════════════════ */
+  function toggleSkyZone() {
+    const on  = document.querySelector('input[name="dfSkyZone"]:checked').value === 'yes';
+    const el  = document.getElementById('dfSkyZone');
+    if (el) el.classList.toggle('show-zone', on);
+  }
+
+  function toggleBands() {
+    renderDfRulers();
+  }
+
+  function renderDfRulers() {
+    const container = document.getElementById('dfRulers');
+    if (!container) return;
+    container.innerHTML = '';
+
+    const on = document.querySelector('input[name="dfBands"]:checked').value === 'yes';
+    if (!on) return;
+
+    const minD = parseFloat(document.getElementById('dfMin').value) || 100;
+    const maxD = parseFloat(document.getElementById('dfMax').value) || 600;
+    const unit = document.getElementById('dfUnit').value;
+    const steps = 5;
+    const stepDist = (maxD - minD) / steps;
+
+    for (let i = 0; i <= steps; i++) {
+      const dist = Math.round(minD + stepDist * i);
+      const yPct = distToYPercent(dist) * 100;
+
+      const line = document.createElement('div');
+      line.className = 'df-ruler-band';
+      line.style.top = yPct + '%';
+      container.appendChild(line);
+
+      const lbl = document.createElement('div');
+      lbl.className = 'df-ruler-label';
+      lbl.style.top = yPct + '%';
+      lbl.textContent = dist + unit;
+      container.appendChild(lbl);
+    }
+  }
+
+  /* ══════════════════════════════════════════════════════
+     TARGET CREATION
+  ══════════════════════════════════════════════════════ */
+  const ANIMAL_EMOJIS = {
+    'Prairie Dog': '🐿', 'Crow': '🐦', 'Chicken': '🐔', 'Rabbit': '🐇',
+    'Squirrel': '🐿', 'Fox': '🦊', 'Coyote': '🐺', 'Turkey': '🦃',
+    'Pig': '🐷', 'Javelina': '🐗', 'Otter': '🦦', 'Bobcat': '🐱',
+    'Ram': '🐏', 'Deer': '🦌', 'Wolf': '🐺', 'Cougar': '🐆',
+    'Bear': '🐻', 'Elk': '🦌'
+  };
+
+  function createDfTarget({ dist, moa, shape, label, imgSrc, xPct }) {
+    const wrap = document.getElementById('dfTargets');
+    if (!wrap) return;
+
+    const id     = ++dfIdCounter;
+    const yPct   = distToYPercent(dist);
+    const sizePx = moaToPx(moa || 2, dist);
+
+    // Default xPct to random horizontal if not provided
+    const xFinal = (xPct !== undefined) ? xPct : 0.1 + Math.random() * 0.8;
+
+    const el = document.createElement('div');
+    el.className = 'df-target';
+    el.id = 'dft-' + id;
+    el.dataset.id = id;
+    el.style.left  = (xFinal * 100) + '%';
+    el.style.top   = (yPct * 100) + '%';
+    el.style.width  = sizePx + 'px';
+    el.style.height = sizePx + 'px';
+    el.style.zIndex = Math.round(yPct * 100); // closer = higher z
+
+    // Shape rendering
+    if (imgSrc) {
+      el.classList.add('df-shape-custom');
+      el.style.backgroundImage = `url(${imgSrc})`;
+    } else if (shape === 'circle') {
+      el.classList.add('df-shape-circle');
+    } else if (shape === 'square') {
+      el.classList.add('df-shape-square');
+    } else if (shape === 'ipsc') {
+      el.classList.add('df-shape-ipsc');
+      el.style.height = (sizePx * 1.5) + 'px';
+    } else if (shape && shape.startsWith('animal:')) {
+      const animal = shape.replace('animal:', '');
+      el.classList.add('df-shape-animal');
+      el.style.fontSize = sizePx + 'px';
+      el.style.width  = 'auto';
+      el.style.height = 'auto';
+      el.textContent = ANIMAL_EMOJIS[animal] || '🎯';
+    }
+
+    // Label
+    if (label) {
+      const lbl = document.createElement('div');
+      lbl.className = 'df-target-label';
+      lbl.textContent = label;
+      lbl.style.top = (sizePx + 4) + 'px';
+      el.appendChild(lbl);
+    }
+
+    // Click to select/delete
+    el.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (el.classList.contains('selected')) {
+        if (confirm('Remove this target?')) removeDfTarget(id);
+      } else {
+        document.querySelectorAll('.df-target.selected').forEach(t => t.classList.remove('selected'));
+        el.classList.add('selected');
+      }
+    });
+
+    // Drag
+    makeDraggable(el, id);
+
+    wrap.appendChild(el);
+    dfTargetList.push({ id, dist, moa, shape, xPct: xFinal, yPct, label, el, imgSrc });
+
+    // Hide hint
+    const hint = document.getElementById('dfHint');
+    if (hint) hint.style.display = 'none';
+
+    return id;
+  }
+
+  function removeDfTarget(id) {
+    const item = dfTargetList.find(t => t.id === id);
+    if (item && item.el) item.el.remove();
+    dfTargetList = dfTargetList.filter(t => t.id !== id);
+    if (dfTargetList.length === 0) {
+      const hint = document.getElementById('dfHint');
+      if (hint) hint.style.display = '';
+    }
+  }
+
+  function clearDfTargets() {
+    document.getElementById('dfTargets').innerHTML = '';
+    dfTargetList = [];
+    const hint = document.getElementById('dfHint');
+    if (hint) hint.style.display = '';
+  }
+
+  /* ══════════════════════════════════════════════════════
+     DRAG & DROP
+  ══════════════════════════════════════════════════════ */
+  function makeDraggable(el, id) {
+    let startX, startY, startLeft, startTop;
+
+    function getPos(e) {
+      return e.touches ? { x: e.touches[0].clientX, y: e.touches[0].clientY }
+                       : { x: e.clientX, y: e.clientY };
+    }
+
+    function onStart(e) {
+      e.preventDefault();
+      el.classList.add('dragging');
+      const p = getPos(e);
+      startX = p.x; startY = p.y;
+      startLeft = parseFloat(el.style.left);
+      startTop  = parseFloat(el.style.top);
+
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup',   onEnd);
+      document.addEventListener('touchmove', onMove, { passive: false });
+      document.addEventListener('touchend',  onEnd);
+    }
+
+    function onMove(e) {
+      e.preventDefault();
+      const wrap = document.getElementById('dfScene');
+      if (!wrap) return;
+      const rect = wrap.getBoundingClientRect();
+      const p    = getPos(e);
+
+      const dx = ((p.x - startX) / rect.width)  * 100;
+      const dy = ((p.y - startY) / rect.height) * 100;
+
+      let newLeft = startLeft + dx;
+      let newTop  = startTop  + dy;
+
+      // Clamp horizontal 0-100%
+      newLeft = Math.max(1, Math.min(99, newLeft));
+      // Clamp vertical: cannot go into sky zone (top 38%) — use center
+      const minTop = SKY_FRACTION * 100 + 2;
+      const maxTop = 96;
+      newTop = Math.max(minTop, Math.min(maxTop, newTop));
+
+      el.style.left = newLeft + '%';
+      el.style.top  = newTop  + '%';
+
+      // Update stored position
+      const item = dfTargetList.find(t => t.id === id);
+      if (item) {
+        item.xPct = newLeft / 100;
+        item.yPct = newTop  / 100;
+      }
+    }
+
+    function onEnd() {
+      el.classList.remove('dragging');
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup',   onEnd);
+      document.removeEventListener('touchmove', onMove);
+      document.removeEventListener('touchend',  onEnd);
+    }
+
+    el.addEventListener('mousedown',  onStart);
+    el.addEventListener('touchstart', onStart, { passive: false });
+  }
+
+  /* ══════════════════════════════════════════════════════
+     GENERATE EXAMPLE TARGETS
+  ══════════════════════════════════════════════════════ */
+  function generateExampleTargets() {
+    const count  = Math.max(1, parseInt(document.getElementById('dfExCount').value) || 4);
+    const type   = document.getElementById('dfExType').value;
+    const moa    = parseFloat(document.getElementById('dfExMoa').value) || 2;
+    const minD   = parseFloat(document.getElementById('dfMin').value) || 100;
+    const maxD   = parseFloat(document.getElementById('dfMax').value) || 600;
+    const unit   = document.getElementById('dfUnit').value;
+    const shapes = ['circle', 'square', 'ipsc'];
+
+    for (let i = 0; i < count; i++) {
+      const dist  = Math.round(minD + Math.random() * (maxD - minD));
+      const shape = type === 'mixed' ? shapes[i % shapes.length] : type;
+      const label = dist + unit;
+      createDfTarget({ dist, moa, shape, label });
+    }
+
+    renderDfRulers();
+  }
+
+  /* ══════════════════════════════════════════════════════
+     IMPORT FROM LAST GENERATED STAGE
+  ══════════════════════════════════════════════════════ */
+  function importFromStage() {
+    // Read from last generated stage output
+    const stageCards = document.querySelectorAll('.stage-card');
+    if (!stageCards.length) {
+      alert('No stage has been generated yet. Generate a stage in the Builder first, then import.');
+      return;
+    }
+
+    clearDfTargets();
+
+    // Sync distance settings
+    const bMin = parseFloat(document.getElementById('minDist').value) || 100;
+    const bMax = parseFloat(document.getElementById('maxDist').value) || 600;
+    document.getElementById('dfMin').value = bMin;
+    document.getElementById('dfMax').value = bMax;
+    syncDfUnitsFromBuilder();
+
+    // Use the first stage card only
+    const card = stageCards[0];
+    const rows = card.querySelectorAll('.target-table tbody tr');
+    const discipline = getDiscipline();
+    const unit = document.getElementById('dfUnit').value;
+    const units = document.getElementById('units').value; // MOA or MIL
+
+    rows.forEach((row, i) => {
+      const cells = row.querySelectorAll('td');
+      if (cells.length < 3) return;
+      const tgtId   = cells[0].textContent.trim();
+      const distTxt = cells[1].textContent.trim();
+      const sizeTxt = cells[2].textContent.trim();
+
+      // Parse distance (strip unit suffix)
+      const distNum = parseFloat(distTxt) || 300;
+      // Convert to yards if in meters
+      const distYd = (unit === 'm') ? Math.round(distNum * M_TO_YD) : distNum;
+
+      // Parse size
+      let moa = 2;
+      let shape = 'circle';
+
+      if (discipline === 'nrl') {
+        // It's an animal name
+        shape = 'animal:' + sizeTxt;
+        moa   = 2; // animals render by emoji size
+      } else {
+        // MOA or MIL value
+        const sizeNum = parseFloat(sizeTxt) || 2;
+        moa = (units === 'MIL') ? sizeNum * 3.438 : sizeNum; // convert MIL to approx MOA for sizing
+        shape = (i % 2 === 0) ? 'circle' : 'square';
+      }
+
+      const xPct = 0.08 + (i / Math.max(1, rows.length - 1)) * 0.84;
+      createDfTarget({ dist: distYd, moa, shape, label: tgtId + ' ' + distTxt, xPct });
+    });
+
+    renderDfRulers();
+  }
+
+  /* ══════════════════════════════════════════════════════
+     CUSTOM IMAGE UPLOAD
+  ══════════════════════════════════════════════════════ */
+  function addCustomTarget(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const src  = e.target.result;
+      const dist = parseFloat(document.getElementById('dfCustomDist').value) || 300;
+      const unit = document.getElementById('dfUnit').value;
+      const moa  = 3; // default visual size for custom images
+      createDfTarget({ dist, moa, shape: 'custom', label: dist + unit, imgSrc: src });
+      renderDfRulers();
+    };
+    reader.readAsDataURL(file);
+    event.target.value = ''; // reset so same file can be re-uploaded
+  }
+
+  /* Deselect targets when clicking canvas bg */
+  document.addEventListener('DOMContentLoaded', () => {
+    const scene = document.getElementById('dfScene');
+    if (scene) {
+      scene.addEventListener('click', (e) => {
+        if (e.target === scene || e.target.id === 'dfTargets' || e.target.id === 'dfRulers') {
+          document.querySelectorAll('.df-target.selected').forEach(t => t.classList.remove('selected'));
+        }
+      });
+    }
+  });
+
+
+  /* ── print / export ── */
+  function printStages() {
+    const output = document.getElementById('output');
+    if (!output || !output.querySelector('.stage-card')) {
+      alert('No stages generated yet. Generate a stage or match first.');
+      return;
+    }
+
+    // Remove any previous print header
+    const prev = document.getElementById('printHeaderBlock');
+    if (prev) prev.remove();
+
+    const discipline = getDiscipline();
+    const mode       = document.querySelector('input[name="mode"]:checked').value;
+    const unit       = getDistUnit();
+    const minD       = document.getElementById('minDist').value;
+    const maxD       = document.getElementById('maxDist').value;
+    const now        = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    const cards      = document.querySelectorAll('.stage-card').length;
+    const modeLabel  = mode === 'match' ? `${cards}-Stage Match` : 'Single Stage';
+    const discLabel  = discipline === 'nrl' ? 'NRL Hunter' : 'PRS';
+
+    const hdr = document.createElement('div');
+    hdr.id = 'printHeaderBlock';
+    hdr.className = 'print-header';
+    hdr.innerHTML = `
+      <h2>PRS &amp; NRL Hunter Stage Builder — ${discLabel} // ${modeLabel}</h2>
+      <p>Generated ${now} &nbsp;|&nbsp; Range: ${minD}–${maxD} ${unit} &nbsp;|&nbsp; v1.3.1 &nbsp;|&nbsp; C. Witherspoon / @dubs_does</p>
+    `;
+    output.insertBefore(hdr, output.firstChild);
+    window.print();
+
+    setTimeout(() => {
+      const h = document.getElementById('printHeaderBlock');
+      if (h) h.remove();
+    }, 1500);
+  }
+
+  function clearOutput() {
+    document.getElementById('output').innerHTML = '';
+    document.getElementById('emptyState').style.display = '';
+    document.getElementById('outputToolbar').style.display = 'none';
+  }
+
+
+  /* ── equipment & custom positions ── */
+
+  const STANDARD_EQUIPMENT = [
+    { name: 'Barricade',      defaultChecked: true },
+    { name: 'Tripod',         defaultChecked: false },
+    { name: 'Tank Trap',      defaultChecked: false },
+    { name: 'Rooftop',        defaultChecked: false },
+    { name: 'Prone',          defaultChecked: false },
+    { name: 'Modified Prone', defaultChecked: false },
+  ];
+
+  // Builds the full expanded position pool for stage generation.
+  // Each checked item is repeated N times (its count input value).
+  function getEquipmentPool() {
+    const pool = [];
+    document.querySelectorAll('.eq-row').forEach(row => {
+      const cb  = row.querySelector('.eq-checkbox');
+      const cnt = row.querySelector('.eq-count');
+      if (!cb || !cb.checked) return;
+      const n = Math.max(1, Math.min(10, parseInt(cnt.value) || 1));
+      for (let i = 0; i < n; i++) pool.push(cb.value);
+    });
+    return pool;
+  }
+
+  // Creates a single equipment row element
+  function makeEqRow({ name, checked = false, count = '', isCustom = false }) {
+    const row = document.createElement('div');
+    row.className = 'eq-row' + (checked ? ' checked' : '') + (isCustom ? ' custom' : '');
+
+    // Checkbox (hidden)
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.className = 'eq-checkbox';
+    cb.value = name;
+    cb.checked = checked;
+
+    // Visual checkbox box
+    const box = document.createElement('span');
+    box.className = 'eq-box';
+
+    // Wrap for click area
+    const checkWrap = document.createElement('div');
+    checkWrap.className = 'eq-check-wrap';
+    checkWrap.appendChild(cb);
+    checkWrap.appendChild(box);
+
+    // Label
+    const label = document.createElement('span');
+    label.className = 'eq-name';
+    label.textContent = name;
+    label.title = name;
+
+    // Count input
+    const countInput = document.createElement('input');
+    countInput.type = 'number';
+    countInput.className = 'eq-count';
+    countInput.min = 1;
+    countInput.max = 10;
+    countInput.placeholder = '1';
+    countInput.value = count || '';
+
+    // Toggle checked state on click (whole row or box or label)
+    function toggleRow() {
+      cb.checked = !cb.checked;
+      row.classList.toggle('checked', cb.checked);
+    }
+
+    checkWrap.addEventListener('click', toggleRow);
+    label.addEventListener('click', toggleRow);
+
+    row.appendChild(checkWrap);
+    row.appendChild(label);
+    row.appendChild(countInput);
+
+    // Remove button for custom rows
+    if (isCustom) {
+      const removeBtn = document.createElement('button');
+      removeBtn.className = 'eq-remove-btn';
+      removeBtn.textContent = '×';
+      removeBtn.title = 'Remove';
+      removeBtn.onclick = () => row.remove();
+      row.appendChild(removeBtn);
+    }
+
+    return row;
+  }
+
+  // Add a custom equipment entry from the text input
+  function addCustomEquipment() {
+    const input = document.getElementById('eqCustomInput');
+    const name  = (input.value || '').trim();
+    if (!name) { input.focus(); return; }
+
+    const list = document.getElementById('eqList');
+    list.appendChild(makeEqRow({ name, checked: true, isCustom: true }));
+    input.value = '';
+    input.focus();
+  }
+
+  // Allow Enter key in custom input to add
+  document.addEventListener('DOMContentLoaded', () => {
+    const inp = document.getElementById('eqCustomInput');
+    if (inp) inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addCustomEquipment(); } });
+  });
+
+  // Initialize equipment list from standard items
+  function initEquipment() {
+    const list = document.getElementById('eqList');
+    if (!list) return;
+    list.innerHTML = '';
+    STANDARD_EQUIPMENT.forEach(eq => {
+      list.appendChild(makeEqRow({ name: eq.name, checked: eq.defaultChecked }));
+    });
+  }
+
+
+  /* ── speed drop ── */
+  function updateSpeedDrop() {
+    const isOn = document.querySelector('input[name="speedDrop"]:checked').value === 'on';
+    document.getElementById('sdBody').classList.toggle('active', isOn);
+  }
+
+  function getSpeedDrop() {
+    const isOn = document.querySelector('input[name="speedDrop"]:checked')?.value === 'on';
+    if (!isOn) return { active: false, sdf: 0 };
+    const sdf = parseFloat(document.getElementById('sdFactor').value);
+    return { active: true, sdf: isNaN(sdf) ? 0 : sdf };
+  }
+
+  /* ── init ── */
+  initEquipment();
+  updateMode();
+  updateDiscipline();
+  updateCustomDist();
+  rebuildDistTable();
+  // Restore saved theme
+  try {
+    const saved = localStorage.getItem('prs-theme');
+    if (saved && saved !== 'amber') setTheme(saved);
+  } catch(e) {}
+
+</script>
+</body>
+</html>
