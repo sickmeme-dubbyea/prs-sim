@@ -465,6 +465,28 @@
       </div>
     </div>
 
+    <!-- SPEED DROP -->
+    <div class="panel" id="speedDropPanel">
+      <div class="sd-toggle-row">
+        <span class="panel-label" style="margin-bottom:0;">Speed Drop</span>
+        <div class="mode-tabs" style="width:100px;">
+          <label style="font-size:0.65rem;"><input type="radio" name="speedDrop" value="off" checked onchange="updateSpeedDrop()"><span>OFF</span></label>
+          <label style="font-size:0.65rem;"><input type="radio" name="speedDrop" value="on" onchange="updateSpeedDrop()"><span>ON</span></label>
+        </div>
+      </div>
+      <div class="sd-body" id="sdBody">
+        <div class="sd-input-row">
+          <label class="sd-label" for="sdFactor">Speed Drop Factor</label>
+          <input type="number" class="sd-input" id="sdFactor" placeholder="e.g. 2.8" min="0" max="20" step="0.01">
+        </div>
+        <div class="sd-note">
+          <strong>Formula:</strong> (yards ÷ 100) − SDF = elevation hold in MIL<br>
+          Example: 528 yd, SDF 2.8 → 5.28 − 2.8 = <strong>2.48 MIL</strong><br><br>
+          Speed Drop is <strong>MIL-only</strong> by design. The math relies on the 1/100 yd relationship inherent to milliradians and has no MOA equivalent. Scope units will be treated as MIL regardless of selection above.
+        </div>
+      </div>
+    </div>
+
     <!-- MATCH SETTINGS -->
     <div class="panel" id="matchPanel">
       <div class="panel-label">Match Settings</div>
@@ -639,7 +661,8 @@
   </div><!-- /df-canvas-wrap -->
 
 </div><!-- /dryFireView -->
-</body>
+
+<!-- ═══════════════════ SCRIPT ═══════════════════ --></body>
 <script src="js/data.js"></script>
 <script src="js/theme.js"></script>
 <script src="js/units.js"></script>
@@ -651,5 +674,6 @@
 <script src="js/dryfire.js"></script>
 <script src="js/print.js"></script>
 <script src="js/equipment.js"></script>
+<script src="js/speeddrop.js"></script>
 <script src="js/init.js"></script>
 </html>

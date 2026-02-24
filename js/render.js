@@ -16,12 +16,32 @@
 
     h += `<div class="stage-body"><div>`;
     const sizeHdr = stage.discipline === 'nrl' ? 'ANIMAL' : 'SIZE';
-    h += `<table class="target-table"><thead><tr><th>TGT</th><th>DIST</th><th>${sizeHdr}</th><th>RDS</th></tr></thead><tbody>`;
+    const sd = stage.speedDrop;
+    const showHold = sd && sd.active;
+
+    // Build a lookup: target id → distance in yards (for speed drop calc)
+    // distancesYd is parallel to the original target order before shuffle;
+    // targets now carry their own distance value — use that, converting if needed.
+    h += `<table class="target-table"><thead><tr><th>TGT</th><th>DIST</th><th>${sizeHdr}</th><th>RDS</th>${showHold ? '<th class="hold-header">HOLD</th>' : ''}</tr></thead><tbody>`;
     stage.targets.forEach(t => {
       const sizeDisplay = stage.discipline === 'nrl'
         ? t.size
         : `${t.size} ${stage.units}`;
-      h += `<tr><td>${t.id}</td><td>${t.distance}${stage.distUnit}</td><td>${sizeDisplay}</td><td>${t.rounds}</td></tr>`;
+
+      let holdCell = '';
+      if (showHold) {
+        // Convert display distance back to yards for the formula
+        const distYd = stage.distUnit === 'm'
+          ? Math.round(t.distance * 1.09361)
+          : t.distance;
+        const raw  = (distYd / 100) - sd.sdf;
+        const hold = Math.max(0, raw);
+        const isZero = raw <= 0;
+        const holdStr = isZero ? '—' : hold.toFixed(2) + ' MIL';
+        holdCell = `<td class="hold-cell${isZero ? ' hold-zero' : ''}">${holdStr}</td>`;
+      }
+
+      h += `<tr><td>${t.id}</td><td>${t.distance}${stage.distUnit}</td><td>${sizeDisplay}</td><td>${t.rounds}</td>${holdCell}</tr>`;
     });
     h += `</tbody></table></div>`;
 

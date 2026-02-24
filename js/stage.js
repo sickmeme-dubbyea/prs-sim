@@ -110,5 +110,8 @@
     // Display label for size column header
     const sizeLabel = discipline === 'nrl' ? 'ANIMAL' : units;
 
-    return { targets: allocated, split, positions, totalRounds: roundProfile.rounds, time: roundProfile.time, units, distUnit, discipline, sizeLabel };
+    const speedDrop = getSpeedDrop();
+    // Speed drop needs distances in yards regardless of display unit
+    // distancesYd is already in yards — pass both for the render layer
+    return { targets: allocated, split, positions, totalRounds: roundProfile.rounds, time: roundProfile.time, units, distUnit, discipline, sizeLabel, speedDrop, distancesYd };
   }

@@ -42,4 +42,11 @@
   function updateMode() {
     const isMatch = document.querySelector('input[name="mode"]:checked').value === 'match';
     document.getElementById('matchPanel').classList.toggle('hidden', !isMatch);
+    // Speed Drop is training-only — hide entirely in match mode
+    document.getElementById('speedDropPanel').classList.toggle('sd-hidden', isMatch);
+    // Also force speed drop OFF when switching to match
+    if (isMatch) {
+      const offRadio = document.querySelector('input[name="speedDrop"][value="off"]');
+      if (offRadio) { offRadio.checked = true; updateSpeedDrop(); }
+    }
   }

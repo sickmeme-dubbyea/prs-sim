@@ -608,6 +608,93 @@
     line-height: 1.5;
   }
 
+
+  /* ── SPEED DROP ── */
+  #speedDropPanel.sd-hidden { display: none; }
+
+  .sd-toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .sd-toggle-label {
+    font-size: 0.66rem;
+    color: var(--text-dim);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .sd-body {
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .sd-body.active { display: flex; }
+
+  .sd-input-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .sd-label {
+    font-size: 0.66rem;
+    color: var(--text-dim);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    flex: 1;
+  }
+
+  .sd-input {
+    width: 84px !important;
+    font-size: 0.75rem;
+    padding: 5px 8px;
+    text-align: center;
+    font-family: 'Share Tech Mono', monospace;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--accent-bright);
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+    box-sizing: border-box;
+    transition: border-color 0.2s;
+  }
+
+  .sd-input:focus { border-color: var(--accent); }
+
+  .sd-note {
+    font-size: 0.58rem;
+    color: var(--text-dim);
+    line-height: 1.55;
+    border-left: 2px solid var(--accent-dim);
+    padding-left: 8px;
+  }
+
+  .sd-note strong { color: var(--accent-bright); }
+
+  /* Hold column in target table */
+  .hold-cell {
+    color: var(--accent-bright);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    font-family: 'Share Tech Mono', monospace;
+  }
+
+  .hold-cell.hold-zero {
+    color: var(--text-dim);
+    font-weight: 400;
+  }
+
+  .hold-header {
+    color: var(--accent) !important;
+  }
+
   /* ── MATCH PANEL ── */
   #matchPanel.hidden { opacity: 0.3; pointer-events: none; }
 
@@ -2034,6 +2121,28 @@
       </div>
     </div>
 
+    <!-- SPEED DROP -->
+    <div class="panel" id="speedDropPanel">
+      <div class="sd-toggle-row">
+        <span class="panel-label" style="margin-bottom:0;">Speed Drop</span>
+        <div class="mode-tabs" style="width:100px;">
+          <label style="font-size:0.65rem;"><input type="radio" name="speedDrop" value="off" checked onchange="updateSpeedDrop()"><span>OFF</span></label>
+          <label style="font-size:0.65rem;"><input type="radio" name="speedDrop" value="on" onchange="updateSpeedDrop()"><span>ON</span></label>
+        </div>
+      </div>
+      <div class="sd-body" id="sdBody">
+        <div class="sd-input-row">
+          <label class="sd-label" for="sdFactor">Speed Drop Factor</label>
+          <input type="number" class="sd-input" id="sdFactor" placeholder="e.g. 2.8" min="0" max="20" step="0.01">
+        </div>
+        <div class="sd-note">
+          <strong>Formula:</strong> (yards ÷ 100) − SDF = elevation hold in MIL<br>
+          Example: 528 yd, SDF 2.8 → 5.28 − 2.8 = <strong>2.48 MIL</strong><br><br>
+          Speed Drop is <strong>MIL-only</strong> by design. The math relies on the 1/100 yd relationship inherent to milliradians and has no MOA equivalent. Scope units will be treated as MIL regardless of selection above.
+        </div>
+      </div>
+    </div>
+
     <!-- MATCH SETTINGS -->
     <div class="panel" id="matchPanel">
       <div class="panel-label">Match Settings</div>
@@ -2306,6 +2415,13 @@
   function updateMode() {
     const isMatch = document.querySelector('input[name="mode"]:checked').value === 'match';
     document.getElementById('matchPanel').classList.toggle('hidden', !isMatch);
+    // Speed Drop is training-only — hide entirely in match mode
+    document.getElementById('speedDropPanel').classList.toggle('sd-hidden', isMatch);
+    // Also force speed drop OFF when switching to match
+    if (isMatch) {
+      const offRadio = document.querySelector('input[name="speedDrop"][value="off"]');
+      if (offRadio) { offRadio.checked = true; updateSpeedDrop(); }
+    }
   }
 
   /* ── distance table & unit helpers ── */
@@ -2568,7 +2684,10 @@
     // Display label for size column header
     const sizeLabel = discipline === 'nrl' ? 'ANIMAL' : units;
 
-    return { targets: allocated, split, positions, totalRounds: roundProfile.rounds, time: roundProfile.time, units, distUnit, discipline, sizeLabel };
+    const speedDrop = getSpeedDrop();
+    // Speed drop needs distances in yards regardless of display unit
+    // distancesYd is already in yards — pass both for the render layer
+    return { targets: allocated, split, positions, totalRounds: roundProfile.rounds, time: roundProfile.time, units, distUnit, discipline, sizeLabel, speedDrop, distancesYd };
   }
 
   /* ── render ── */
@@ -2589,12 +2708,32 @@
 
     h += `<div class="stage-body"><div>`;
     const sizeHdr = stage.discipline === 'nrl' ? 'ANIMAL' : 'SIZE';
-    h += `<table class="target-table"><thead><tr><th>TGT</th><th>DIST</th><th>${sizeHdr}</th><th>RDS</th></tr></thead><tbody>`;
+    const sd = stage.speedDrop;
+    const showHold = sd && sd.active;
+
+    // Build a lookup: target id → distance in yards (for speed drop calc)
+    // distancesYd is parallel to the original target order before shuffle;
+    // targets now carry their own distance value — use that, converting if needed.
+    h += `<table class="target-table"><thead><tr><th>TGT</th><th>DIST</th><th>${sizeHdr}</th><th>RDS</th>${showHold ? '<th class="hold-header">HOLD</th>' : ''}</tr></thead><tbody>`;
     stage.targets.forEach(t => {
       const sizeDisplay = stage.discipline === 'nrl'
         ? t.size
         : `${t.size} ${stage.units}`;
-      h += `<tr><td>${t.id}</td><td>${t.distance}${stage.distUnit}</td><td>${sizeDisplay}</td><td>${t.rounds}</td></tr>`;
+
+      let holdCell = '';
+      if (showHold) {
+        // Convert display distance back to yards for the formula
+        const distYd = stage.distUnit === 'm'
+          ? Math.round(t.distance * 1.09361)
+          : t.distance;
+        const raw  = (distYd / 100) - sd.sdf;
+        const hold = Math.max(0, raw);
+        const isZero = raw <= 0;
+        const holdStr = isZero ? '—' : hold.toFixed(2) + ' MIL';
+        holdCell = `<td class="hold-cell${isZero ? ' hold-zero' : ''}">${holdStr}</td>`;
+      }
+
+      h += `<tr><td>${t.id}</td><td>${t.distance}${stage.distUnit}</td><td>${sizeDisplay}</td><td>${t.rounds}</td>${holdCell}</tr>`;
     });
     h += `</tbody></table></div>`;
 
@@ -3230,6 +3369,20 @@
     STANDARD_EQUIPMENT.forEach(eq => {
       list.appendChild(makeEqRow({ name: eq.name, checked: eq.defaultChecked }));
     });
+  }
+
+
+  /* ── speed drop ── */
+  function updateSpeedDrop() {
+    const isOn = document.querySelector('input[name="speedDrop"]:checked').value === 'on';
+    document.getElementById('sdBody').classList.toggle('active', isOn);
+  }
+
+  function getSpeedDrop() {
+    const isOn = document.querySelector('input[name="speedDrop"]:checked')?.value === 'on';
+    if (!isOn) return { active: false, sdf: 0 };
+    const sdf = parseFloat(document.getElementById('sdFactor').value);
+    return { active: true, sdf: isNaN(sdf) ? 0 : sdf };
   }
 
   /* ── init ── */
